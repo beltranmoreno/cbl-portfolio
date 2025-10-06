@@ -1,4 +1,6 @@
-export default {
+import { Rule } from "sanity"
+
+const siteSettings = {
   name: 'siteSettings',
   title: 'Site Settings',
   type: 'document',
@@ -8,7 +10,7 @@ export default {
       title: 'Site Name',
       type: 'string',
       initialValue: 'Carmen Ballvé',
-      validation: (Rule: any) => Rule.required()
+      validation: (Rule: Rule) => Rule.required()
     },
     {
       name: 'aboutBio',
@@ -39,7 +41,7 @@ export default {
       name: 'contactEmail',
       title: 'Contact Email',
       type: 'string',
-      validation: (Rule: any) => Rule.email()
+      validation: (Rule: Rule) => Rule.email()
     },
     {
       name: 'socialLinks',
@@ -65,8 +67,10 @@ export default {
       title: 'Featured Projects (Homepage)',
       type: 'array',
       of: [{ type: 'reference', to: [{ type: 'project' }] }],
-      validation: (Rule: any) => Rule.max(4),
+      validation: (Rule: Rule) => Rule.max(4),
       description: 'Max 4 projects to feature on homepage'
     }
   ]
 }
+
+export default siteSettings

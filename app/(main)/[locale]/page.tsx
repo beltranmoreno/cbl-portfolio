@@ -35,31 +35,18 @@ export default async function HomePage({
               <Link
                 key={imageAsset._id}
                 href={`/${locale}/projects/${projectSlug}`}
-                className="mb-4 md:mb-6 block group"
+                className="mb-4 md:mb-6 block"
               >
-                <div className="relative overflow-hidden">
-                  <div className="image-hover">
-                    <ImageWithBorder
-                      image={imageAsset.image}
-                      alt={caption || projectTitle || 'Photography'}
-                      medium={imageAsset.medium}
-                      filmFormat={imageAsset.filmFormat}
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                  </div>
-
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 md:p-6">
-                    <div className="text-white">
-                      <h3 className="font-serif text-lg md:text-xl font-bold mb-1">
-                        {projectTitle}
-                      </h3>
-                      {location && (
-                        <p className="text-sm text-white/90">{location}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <ImageWithBorder
+                  image={imageAsset.image}
+                  alt={caption || projectTitle || 'Photography'}
+                  medium={imageAsset.medium}
+                  filmFormat={imageAsset.filmFormat}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  caption={caption}
+                  location={location}
+                  projectTitle={projectTitle}
+                />
               </Link>
             )
           })}
