@@ -1,26 +1,272 @@
 @import "tailwindcss";
 
+/* ============================================
+   Carmen Ballvé Portfolio - Global Styles
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Color Palette - Darkroom Red */
+  --color-primary: 139 0 0;
+  --color-primary-light: 160 17 26;
+  --color-primary-dark: 107 0 0;
+
+  /* Neutral Palette */
+  --color-neutral-50: 250 250 250;
+  --color-neutral-100: 245 245 245;
+  --color-neutral-200: 229 229 229;
+  --color-neutral-300: 212 212 212;
+  --color-neutral-400: 163 163 163;
+  --color-neutral-500: 115 115 115;
+  --color-neutral-600: 82 82 82;
+  --color-neutral-700: 64 64 64;
+  --color-neutral-800: 38 38 38;
+  --color-neutral-900: 23 23 23;
+  --color-neutral-950: 10 10 10;
+
+  /* Pure Black & White */
+  --color-black: 0 0 0;
+  --color-white: 255 255 255;
+
+  /* Film Border Widths */
+  --film-border-35mm: 4px;
+  --film-border-120: 6px;
+
+  /* Grain Opacity */
+  --grain-opacity: 0.02;
+
+  /* Navigation */
+  --nav-height: 80px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Custom Colors */
+  --color-primary: rgb(var(--color-primary));
+  --color-primary-light: rgb(var(--color-primary-light));
+  --color-primary-dark: rgb(var(--color-primary-dark));
+
+  --color-neutral-50: rgb(var(--color-neutral-50));
+  --color-neutral-100: rgb(var(--color-neutral-100));
+  --color-neutral-200: rgb(var(--color-neutral-200));
+  --color-neutral-300: rgb(var(--color-neutral-300));
+  --color-neutral-400: rgb(var(--color-neutral-400));
+  --color-neutral-500: rgb(var(--color-neutral-500));
+  --color-neutral-600: rgb(var(--color-neutral-600));
+  --color-neutral-700: rgb(var(--color-neutral-700));
+  --color-neutral-800: rgb(var(--color-neutral-800));
+  --color-neutral-900: rgb(var(--color-neutral-900));
+  --color-neutral-950: rgb(var(--color-neutral-950));
+
+  /* Typography */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-crimson);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================
+   Base Styles
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: rgb(var(--color-white));
+  color: rgb(var(--color-neutral-900));
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Film Edge Styles
+   ============================================ */
+
+/* 35mm Film Border */
+.image-film-35mm {
+  border: var(--film-border-35mm) solid rgb(var(--color-black));
+  position: relative;
+  background: rgb(var(--color-white));
+  padding: 2px;
+  transition: all 200ms ease-out;
+}
+
+/* Optional sprocket holes (very subtle) */
+.image-film-35mm::before,
+.image-film-35mm::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 100%;
+  top: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 8px,
+    rgb(var(--color-black)) 8px,
+    rgb(var(--color-black)) 12px
+  );
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.image-film-35mm::before {
+  left: -10px;
+}
+
+.image-film-35mm::after {
+  right: -10px;
+}
+
+/* Medium Format 120 */
+.image-film-120 {
+  border: var(--film-border-120) solid rgb(26 26 26);
+  padding: 8px;
+  background: rgb(var(--color-white));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 200ms ease-out;
+}
+
+/* Digital (clean, modern) */
+.image-digital {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 200ms ease-out;
+}
+
+/* ============================================
+   Grain Texture Overlay
+   ============================================ */
+
+.grain-overlay {
+  position: relative;
+}
+
+.grain-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px
+    );
+  opacity: var(--grain-opacity);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-white));
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Image hover effects */
+.image-hover {
+  transition: transform 200ms ease-out;
+}
+
+.image-hover:hover {
+  transform: scale(1.02);
+}
+
+/* Navigation transitions */
+.nav-transition {
+  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+}
+
+.nav-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.nav-visible {
+  transform: translateY(0);
+  opacity: 1;
 }
