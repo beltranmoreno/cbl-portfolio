@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Locale } from '@/lib/i18n'
 import LanguageToggle from './LanguageToggle'
@@ -55,7 +56,7 @@ export default function Navigation({ locale, translations }: NavigationProps) {
         Skip to content
       </a>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-neutral-200 nav-transition ${
+        className={`fixed top-0 left-0 right-0 z-50 bg-neutral-50 border-b border-neutral-200 nav-transition ${
           isVisible ? 'nav-visible' : 'nav-hidden'
         }`}
         style={{ height: 'var(--nav-height)' }}
@@ -64,8 +65,15 @@ export default function Navigation({ locale, translations }: NavigationProps) {
           {/* Logo/Wordmark */}
           <Link
             href={`/${locale}`}
-            className="font-serif text-2xl font-bold text-neutral-900 hover:text-primary transition-colors"
+            className="flex items-center gap-3 font-serif text-2xl font-bold text-neutral-900 hover:text-primary transition-colors"
           >
+            <Image
+              src="/ARBOL_DE_LA_DICHA.png"
+              alt="Árbol de la Dicha"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
+            />
             Carmen Ballvé
           </Link>
 

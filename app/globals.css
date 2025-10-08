@@ -246,14 +246,15 @@ body {
 
 /* Skip to content link */
 .skip-to-content {
-  position: absolute;
-  top: -40px;
+  position: fixed;
+  top: -100px;
   left: 0;
   background: rgb(var(--color-primary));
   color: rgb(var(--color-white));
   padding: 8px 16px;
   text-decoration: none;
   z-index: 100;
+  transition: top 0.2s;
 }
 
 .skip-to-content:focus {
@@ -308,15 +309,13 @@ body {
 
 /* Navigation transitions */
 .nav-transition {
-  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+  transition: transform 300ms ease-in-out;
 }
 
 .nav-hidden {
   transform: translateY(-100%);
-  opacity: 0;
 }
 
 .nav-visible {
   transform: translateY(0);
-  opacity: 1;
 }

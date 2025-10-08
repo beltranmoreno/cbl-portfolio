@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Locale, getTranslations, getLocalizedField, formatProjectYears } from '@/lib/i18n'
-import { getSiteSettings, getAllProjects } from '@/lib/sanity.queries'
+import { getSiteSettings, getAllProjects, type PortableTextBlock } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 
 export default async function AboutPage({
@@ -48,14 +48,14 @@ export default async function AboutPage({
 
             {bio && (
               <div className="prose prose-lg max-w-none">
-                {bio.map((block, index) => {
+                {bio.map((block: PortableTextBlock, index: number) => {
                   if (block._type === 'block') {
                     return (
                       <p
                         key={index}
                         className="text-neutral-700 leading-relaxed mb-4"
                       >
-                        {block.children.map((child) => child.text).join('')}
+                        {block.children?.map((child) => child.text).join('')}
                       </p>
                     )
                   }

@@ -9,7 +9,8 @@ interface MasonryGridProps {
 }
 
 const breakpointColumns = {
-  default: 4,
+  default: 2,
+  1536: 4,
   1280: 3,
   1024: 3,
   768: 2,

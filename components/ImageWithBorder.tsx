@@ -18,6 +18,7 @@ interface ImageWithBorderProps {
   caption?: string
   location?: string
   projectTitle?: string
+  thumbnail?: boolean
 }
 
 export default function ImageWithBorder({
@@ -34,6 +35,7 @@ export default function ImageWithBorder({
   caption,
   location,
   projectTitle,
+  thumbnail = false,
 }: ImageWithBorderProps) {
   // Determine border class based on medium and format
   const getBorderClass = () => {
@@ -71,7 +73,7 @@ export default function ImageWithBorder({
           className="w-full h-auto object-cover"
           onLoad={onLoad}
         />
-        {hasOverlay && (
+        {hasOverlay && !thumbnail && (
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-24 pb-4 px-4 md:px-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             {caption && (
               <p className="text-white font-serif text-base md:text-lg leading-relaxed mb-2">

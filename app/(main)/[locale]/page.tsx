@@ -1,10 +1,9 @@
-import Link from 'next/link'
-import Image from 'next/image'
 import { Locale, getTranslations, getLocalizedString, getLocalizedSlug, getLocalizedText, formatProjectYears } from '@/lib/i18n'
-import { getFeaturedImages, getSiteSettings, type SiteSettings } from '@/lib/sanity.queries'
+import { getFeaturedImages, getSiteSettings } from '@/lib/sanity.queries'
+import HomeContent from '@/components/HomeContent'
+import Link from 'next/link'
 import { urlForImage } from '@/lib/sanity.client'
-import MasonryGrid from '@/components/MasonryGrid'
-import ImageWithBorder from '@/components/ImageWithBorder'
+import Image from 'next/image'
 
 export default async function HomePage({
   params,
@@ -18,40 +17,13 @@ export default async function HomePage({
 
   const featuredProjects = siteSettings?.featuredProjects || []
 
-  console.log(featuredProjects)
-
   return (
     <div className="min-h-screen">
-      {/* Hero Masonry Grid */}
-      <section className="container py-8 md:py-12">
-        <MasonryGrid>
-          {featuredImages.map((imageAsset) => {
-            const projectTitle = getLocalizedString(imageAsset.project.title, locale)
-            const projectSlug = getLocalizedSlug(imageAsset.project.slug, locale)?.current || ''
-            const location = imageAsset.project?.locations?.[0] || ''
-            const caption = getLocalizedString(imageAsset.caption, locale)
-
-            return (
-              <Link
-                key={imageAsset._id}
-                href={`/${locale}/projects/${projectSlug}`}
-                className="mb-4 md:mb-6 block"
-              >
-                <ImageWithBorder
-                  image={imageAsset.image}
-                  alt={caption || projectTitle || 'Photography'}
-                  medium={imageAsset.medium}
-                  filmFormat={imageAsset.filmFormat}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  caption={caption}
-                  location={location}
-                  projectTitle={projectTitle}
-                />
-              </Link>
-            )
-          })}
-        </MasonryGrid>
-      </section>
+      {/* Hero Masonry Grid with Spotlight */}
+      <HomeContent
+        featuredImages={featuredImages}
+        locale={locale}
+      />
 
       {/* Featured Projects */}
       {featuredProjects.length > 0 && (
