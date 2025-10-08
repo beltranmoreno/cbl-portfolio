@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Locale } from '@/lib/i18n'
 import LanguageToggle from './LanguageToggle'
+import { useNavigation } from '@/contexts/NavigationContext'
 
 interface NavigationProps {
   locale: Locale
@@ -18,29 +19,9 @@ interface NavigationProps {
 }
 
 export default function Navigation({ locale, translations }: NavigationProps) {
-  const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const { isNavVisible } = useNavigation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
-        setIsVisible(false)
-      } else {
-        // Scrolling up
-        setIsVisible(true)
-      }
-
-      setLastScrollY(currentScrollY)
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY])
 
   const navLinks = [
     { href: `/${locale}/about`, label: translations.about },
@@ -56,8 +37,8 @@ export default function Navigation({ locale, translations }: NavigationProps) {
         Skip to content
       </a>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 bg-neutral-50 border-b border-neutral-200 nav-transition ${
-          isVisible ? 'nav-visible' : 'nav-hidden'
+        className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200 nav-transition ${
+          isNavVisible ? 'nav-visible' : 'nav-hidden'
         }`}
         style={{ height: 'var(--nav-height)' }}
       >

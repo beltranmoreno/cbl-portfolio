@@ -2,6 +2,8 @@ import { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
+import ProgressBar from '@/components/ProgressBar'
+import { NavigationProvider } from '@/contexts/NavigationContext'
 import { Locale, locales, getTranslations } from '@/lib/i18n'
 import { getSiteSettings } from '@/lib/sanity.queries'
 
@@ -47,7 +49,8 @@ export default async function LocaleLayout({
   const siteSettings = await getSiteSettings()
 
   return (
-    <>
+    <NavigationProvider>
+      <ProgressBar />
       <Navigation locale={locale} translations={translations.navigation} />
       <main id="main-content">{children}</main>
       <Footer
@@ -56,6 +59,6 @@ export default async function LocaleLayout({
         socialLinks={siteSettings?.socialLinks}
         copyright={translations.common.copyright}
       />
-    </>
+    </NavigationProvider>
   )
 }

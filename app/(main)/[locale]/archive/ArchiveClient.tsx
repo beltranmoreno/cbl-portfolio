@@ -6,10 +6,18 @@ import { Locale, getLocalizedField } from '@/lib/i18n'
 import type { ImageAsset, CommonTranslations } from '@/lib/types'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
+import { useNavigation } from '@/contexts/NavigationContext'
+
+interface Project {
+  _id: string
+  title: string
+  locations: string[]
+}
 
 interface ArchiveClientProps {
   locale: Locale
   images: ImageAsset[]
+  projects: Project[]
   locations: string[]
   years: number[]
   tags: string[]
@@ -19,21 +27,51 @@ interface ArchiveClientProps {
 export default function ArchiveClient({
   locale,
   images,
+  projects,
   locations,
   years,
   tags,
   translations,
 }: ArchiveClientProps) {
+  const { isNavVisible } = useNavigation()
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([])
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   const [selectedYears, setSelectedYears] = useState<number[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
+  // Get locations from selected projects
+  const projectLocations = useMemo(() => {
+    if (selectedProjects.length === 0) return []
+    return Array.from(
+      new Set(
+        projects
+          .filter((p) => selectedProjects.includes(p._id))
+          .flatMap((p) => p.locations)
+      )
+    )
+  }, [selectedProjects, projects])
+
+  // Auto-select project locations when project is selected
+  const effectiveLocations = useMemo(() => {
+    if (selectedProjects.length > 0) {
+      return projectLocations
+    }
+    return selectedLocations
+  }, [selectedProjects, projectLocations, selectedLocations])
+
   const filteredImages = useMemo(() => {
     return images.filter((img) => {
-      // Location filter
-      if (selectedLocations.length > 0) {
+      // Project filter
+      if (selectedProjects.length > 0) {
+        if (!img.project || !selectedProjects.includes(img.project._id)) {
+          return false
+        }
+      }
+
+      // Location filter (using effective locations)
+      if (effectiveLocations.length > 0) {
         const hasMatchingLocation = img.project?.locations?.some((loc) =>
-          selectedLocations.includes(loc)
+          effectiveLocations.includes(loc)
         )
         if (!hasMatchingLocation) return false
       }
@@ -55,9 +93,20 @@ export default function ArchiveClient({
 
       return true
     })
-  }, [images, selectedLocations, selectedYears, selectedTags])
+  }, [images, selectedProjects, effectiveLocations, selectedYears, selectedTags])
+
+  const toggleProject = (projectId: string) => {
+    setSelectedProjects((prev) =>
+      prev.includes(projectId)
+        ? prev.filter((id) => id !== projectId)
+        : [...prev, projectId]
+    )
+  }
 
   const toggleLocation = (location: string) => {
+    // Don't allow manual location selection if project is selected
+    if (selectedProjects.length > 0) return
+
     setSelectedLocations((prev) =>
       prev.includes(location)
         ? prev.filter((l) => l !== location)
@@ -78,12 +127,14 @@ export default function ArchiveClient({
   }
 
   const clearAllFilters = () => {
+    setSelectedProjects([])
     setSelectedLocations([])
     setSelectedYears([])
     setSelectedTags([])
   }
 
   const hasActiveFilters =
+    selectedProjects.length > 0 ||
     selectedLocations.length > 0 ||
     selectedYears.length > 0 ||
     selectedTags.length > 0
@@ -91,27 +142,63 @@ export default function ArchiveClient({
   return (
     <>
       {/* Filter Bar */}
-      <div className="sticky top-[var(--nav-height)] z-40 bg-white/95 backdrop-blur-sm border-y border-neutral-200 py-4 mb-8">
+      <div
+        className="sticky z-40 bg-white border-y border-neutral-200 py-4 mb-8 transition-all duration-300"
+        style={{
+          top: isNavVisible ? 'var(--nav-height)' : '0'
+        }}
+      >
         <div className="flex flex-col md:flex-row gap-4">
+          {/* Project Filter */}
+          <div className="flex-1">
+            <label className="block text-sm font-bold uppercase tracking-wide text-neutral-700 mb-2">
+              {locale === 'en' ? 'Project' : 'Proyecto'}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {projects.map((project) => (
+                <button
+                  key={project._id}
+                  onClick={() => toggleProject(project._id)}
+                  className={`px-3 py-1 text-sm border transition-colors ${
+                    selectedProjects.includes(project._id)
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary'
+                  }`}
+                >
+                  {project.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Location Filter */}
           <div className="flex-1">
             <label className="block text-sm font-bold uppercase tracking-wide text-neutral-700 mb-2">
               {translations.location}
             </label>
             <div className="flex flex-wrap gap-2">
-              {locations.map((location) => (
-                <button
-                  key={location}
-                  onClick={() => toggleLocation(location)}
-                  className={`px-3 py-1 text-sm border transition-colors ${
-                    selectedLocations.includes(location)
-                      ? 'bg-primary text-white border-primary'
-                      : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary'
-                  }`}
-                >
-                  {location}
-                </button>
-              ))}
+              {locations.map((location) => {
+                const isFromProject = projectLocations.includes(location)
+                const isDisabled = selectedProjects.length > 0 && !isFromProject
+                const isActive = effectiveLocations.includes(location)
+
+                return (
+                  <button
+                    key={location}
+                    onClick={() => toggleLocation(location)}
+                    disabled={isDisabled}
+                    className={`px-3 py-1 text-sm border transition-colors ${
+                      isActive
+                        ? 'bg-primary text-white border-primary'
+                        : isDisabled
+                        ? 'bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed'
+                        : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary'
+                    }`}
+                  >
+                    {location}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -160,7 +247,7 @@ export default function ArchiveClient({
               </div>
             </div>
           )}
-        </div>
+        
 
         {/* Active Filters & Clear Button */}
         {hasActiveFilters && (
@@ -190,6 +277,7 @@ export default function ArchiveClient({
             </span>
           </div>
         )}
+      </div>
       </div>
 
       {/* Masonry Grid */}

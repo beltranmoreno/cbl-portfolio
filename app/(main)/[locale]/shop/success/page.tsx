@@ -55,7 +55,7 @@ export default async function SuccessPage({
             href={`/${locale}`}
             className="px-6 py-3 bg-primary text-white hover:bg-primary-dark transition-colors"
           >
-            {locale === 'en' ? 'Back to Home' : 'Volver al Inicio'}
+            <span className="text-white">{locale === 'en' ? 'Back to Home' : 'Volver al Inicio'}</span>
           </Link>
         </div>
       </div>

@@ -1,4 +1,24 @@
 @import "tailwindcss";
+@import "nprogress/nprogress.css";
+
+@theme {
+  --color-white: rgb(255 255 255);
+  --color-black: rgb(0 0 0);
+  --color-primary: rgb(0 0 0);
+  --color-primary-light: rgb(160 17 26);
+  --color-primary-dark: rgb(107 0 0);
+  --color-neutral-50: rgb(250 250 250);
+  --color-neutral-100: rgb(245 245 245);
+  --color-neutral-200: rgb(229 229 229);
+  --color-neutral-300: rgb(212 212 212);
+  --color-neutral-400: rgb(163 163 163);
+  --color-neutral-500: rgb(115 115 115);
+  --color-neutral-600: rgb(82 82 82);
+  --color-neutral-700: rgb(64 64 64);
+  --color-neutral-800: rgb(38 38 38);
+  --color-neutral-900: rgb(23 23 23);
+  --color-neutral-950: rgb(10 10 10);
+}
 
 /* ============================================
    Carmen Ballvé Portfolio - Global Styles
@@ -22,11 +42,7 @@
   --color-neutral-800: 38 38 38;
   --color-neutral-900: 23 23 23;
   --color-neutral-950: 10 10 10;
-
-  /* Pure Black & White */
-  --color-black: 0 0 0;
-  --color-white: 255 255 255;
-
+  
   /* Film Border Widths */
   --film-border-35mm: 4px;
   --film-border-120: 6px;
@@ -135,6 +151,27 @@ body {
     0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* 35mm Film Variations - Random rotations and shifts for authenticity */
+.image-film-35mm-v1 {
+  transform: rotate(0.5deg) translateX(1px);
+}
+
+.image-film-35mm-v2 {
+  transform: rotate(-0.7deg) translateX(-2px);
+}
+
+.image-film-35mm-v3 {
+  transform: rotate(0.3deg) translateY(1px);
+}
+
+.image-film-35mm-v4 {
+  transform: rotate(-0.4deg) translateX(2px) translateY(-1px);
+}
+
+.image-film-35mm-v5 {
+  transform: rotate(0.6deg) translateX(-1px) translateY(1px);
+}
+
 /* Medium Format 120 - Wide organic border with subtle texture */
 .image-film-120 {
   position: relative;
@@ -167,6 +204,27 @@ body {
     0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
+/* 120 Film Variations - Organic shifts for hand-developed feel */
+.image-film-120-v1 {
+  transform: rotate(0.4deg) translateX(-1px);
+}
+
+.image-film-120-v2 {
+  transform: rotate(-0.5deg) translateY(1px);
+}
+
+.image-film-120-v3 {
+  transform: rotate(0.3deg) translateX(1px) translateY(-1px);
+}
+
+.image-film-120-v4 {
+  transform: rotate(-0.6deg) translateX(2px);
+}
+
+.image-film-120-v5 {
+  transform: rotate(0.2deg) translateX(-2px) translateY(1px);
+}
+
 /* Digital - Minimal shadow with slight imperfection */
 .image-digital {
   position: relative;
@@ -179,17 +237,25 @@ body {
   transform: rotate(0deg);
 }
 
-/* Subtle random rotation for organic feel */
-.image-digital:nth-child(3n+1) {
+/* Digital Variations - Subtle imperfections */
+.image-digital-v1 {
   transform: rotate(0.3deg);
 }
 
-.image-digital:nth-child(3n+2) {
+.image-digital-v2 {
   transform: rotate(-0.2deg);
 }
 
-.image-digital:nth-child(3n) {
+.image-digital-v3 {
   transform: rotate(0.4deg);
+}
+
+.image-digital-v4 {
+  transform: rotate(-0.3deg) translateX(1px);
+}
+
+.image-digital-v5 {
+  transform: rotate(0.2deg) translateY(-1px);
 }
 
 /* ============================================
@@ -318,4 +384,14 @@ body {
 
 .nav-visible {
   transform: translateY(0);
+}
+
+/* NProgress customization */
+#nprogress .bar {
+  background: rgb(var(--color-primary)) !important;
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px rgb(var(--color-primary)), 0 0 5px rgb(var(--color-primary)) !important;
 }

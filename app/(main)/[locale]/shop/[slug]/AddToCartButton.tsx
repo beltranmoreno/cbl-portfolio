@@ -52,19 +52,15 @@ export default function AddToCartButton({
         }),
       })
 
-      const { sessionId } = await response.json()
+      const { url } = await response.json()
 
       // Redirect to Stripe Checkout
-      const stripe = await import('@stripe/stripe-js').then((mod) =>
-        mod.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-      )
-
-      const stripeInstance = await stripe
-      await stripeInstance?.redirectToCheckout({ sessionId })
+      if (url) {
+        window.location.href = url
+      }
     } catch (error) {
       console.error('Checkout error:', error)
       alert('Something went wrong. Please try again.')
-    } finally {
       setIsAdding(false)
     }
   }

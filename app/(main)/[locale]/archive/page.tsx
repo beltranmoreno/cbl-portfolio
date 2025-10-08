@@ -1,4 +1,4 @@
-import { Locale, getTranslations } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedString } from '@/lib/i18n'
 import { getAllImages } from '@/lib/sanity.queries'
 import ArchiveClient from './ArchiveClient'
 
@@ -10,6 +10,22 @@ export default async function ArchivePage({
   const { locale } = await params
   const translations = getTranslations(locale)
   const allImages = await getAllImages()
+
+  // Extract unique projects
+  const projects = Array.from(
+    new Map(
+      allImages
+        .filter((img) => img.project)
+        .map((img) => [
+          img.project._id,
+          {
+            _id: img.project._id,
+            title: getLocalizedString(img.project.title, locale),
+            locations: img.project.locations || [],
+          },
+        ])
+    ).values()
+  ).sort((a, b) => a.title.localeCompare(b.title))
 
   // Extract unique locations and years for filters
   const locations = Array.from(
@@ -42,6 +58,7 @@ export default async function ArchivePage({
         <ArchiveClient
           locale={locale}
           images={allImages}
+          projects={projects}
           locations={locations}
           years={years}
           tags={tags}

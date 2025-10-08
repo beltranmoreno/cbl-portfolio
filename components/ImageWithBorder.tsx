@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import Image from 'next/image'
 import { urlForImage } from '@/lib/sanity.client'
 import type { SanityImage } from '@/lib/sanity.queries'
@@ -37,20 +38,33 @@ export default function ImageWithBorder({
   projectTitle,
   thumbnail = false,
 }: ImageWithBorderProps) {
+  // Generate random variation based on image asset ID for consistency
+  const variation = useMemo(() => {
+    const hash = image.asset?._ref?.split('-')[1] || ''
+    const num = parseInt(hash.substring(0, 8), 16) % 5 + 1
+    return num
+  }, [image.asset?._ref])
+
   // Determine border class based on medium and format
   const getBorderClass = () => {
+    let baseClass = ''
+
     if (medium === 'digital-bw') {
-      return 'image-digital'
-    }
-    if (medium === 'film-bw') {
+      baseClass = 'image-digital'
+    } else if (medium === 'film-bw') {
       if (filmFormat === '35mm') {
-        return 'image-film-35mm'
+        baseClass = 'image-film-35mm'
+      } else if (filmFormat === '120') {
+        baseClass = 'image-film-120'
+      } else {
+        baseClass = 'image-digital'
       }
-      if (filmFormat === '120') {
-        return 'image-film-120'
-      }
+    } else {
+      baseClass = 'image-digital'
     }
-    return 'image-digital' // fallback
+
+    // Add variation class
+    return `${baseClass} ${baseClass}-v${variation}`
   }
 
   const borderClass = getBorderClass()
