@@ -1,20 +1,27 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Locale, getTranslations, getLocalizedField, formatProjectYears } from '@/lib/i18n'
-import { getProjectBySlug, getAllProjects } from '@/lib/sanity.queries'
+import { Locale, getTranslations, getLocalizedString, getLocalizedText, getLocalizedSlug, formatProjectYears } from '@/lib/i18n'
+import { getProjectBySlug, getAllProjects, type PortableTextBlock, type Project, type ImageAsset } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 import ProjectGallery from './ProjectGallery'
 
+// Extended Project type with images
+type ProjectWithImages = Project & {
+  images?: ImageAsset[]
+}
+
 export async function generateStaticParams() {
-  const projects = await getAllProjects('en')
+  const projects = await getAllProjects()
 
   const params = []
   for (const project of projects) {
-    params.push(
-      { locale: 'en', slug: project.slug.en.current },
-      { locale: 'es', slug: project.slug.es.current }
-    )
+    if (project.slug?.en?.current && project.slug?.es?.current) {
+      params.push(
+        { locale: 'en', slug: project.slug.en.current },
+        { locale: 'es', slug: project.slug.es.current }
+      )
+    }
   }
 
   return params
@@ -27,18 +34,20 @@ export default async function ProjectPage({
 }) {
   const { locale, slug } = await params
   const translations = getTranslations(locale)
-  const project = await getProjectBySlug(slug, locale)
+  const projectData = await getProjectBySlug(slug, locale)
 
-  if (!project) {
+  if (!projectData) {
     notFound()
   }
 
-  const title = getLocalizedField(project, 'title', locale)
-  const description = getLocalizedField(project, 'description', locale)
-  const publications = getLocalizedField(project, 'publications', locale)
+  const project = projectData as ProjectWithImages
+
+  const title = getLocalizedString(project.title, locale)
+  const description = getLocalizedText(project.description, locale)
+  const publications = project.publications?.map(pub => getLocalizedString(pub, locale)) || []
 
   // Get next project (for "Next Project" link)
-  const allProjects = await getAllProjects(locale)
+  const allProjects = await getAllProjects()
   const currentIndex = allProjects.findIndex((p) => p._id === project._id)
   const nextProject =
     currentIndex < allProjects.length - 1
@@ -81,13 +90,13 @@ export default async function ProjectPage({
       <section className="container py-12 md:py-16">
         <div className="max-w-3xl mx-auto">
           {/* Description */}
-          {description && (
+          {description && description.length > 0 && (
             <div className="prose prose-lg max-w-none mb-8">
-              {description.map((block, index) => {
+              {description.map((block: PortableTextBlock, index: number) => {
                 if (block._type === 'block') {
                   return (
                     <p key={index} className="text-neutral-700 leading-relaxed">
-                      {block.children.map((child) => child.text).join('')}
+                      {block.children?.map((child) => child.text).join('')}
                     </p>
                   )
                 }
@@ -159,13 +168,15 @@ export default async function ProjectPage({
       </section>
 
       {/* Image Gallery */}
-      <section className="container py-12">
-        <ProjectGallery
-          images={project.images}
-          locale={locale}
-          availableAsPrintText={translations.common.availableAsPrint}
-        />
-      </section>
+      {project.images && project.images.length > 0 && (
+        <section className="container py-12">
+          <ProjectGallery
+            images={project.images}
+            locale={locale}
+            availableAsPrintText={translations.common.availableAsPrint}
+          />
+        </section>
+      )}
 
       {/* Next Project */}
       <section className="container py-12 md:py-16 border-t border-neutral-200">
@@ -185,21 +196,21 @@ export default async function ProjectPage({
             </h2>
             <Link
               href={`/${locale}/projects/${
-                getLocalizedField(nextProject, 'slug', locale)?.current
+                getLocalizedSlug(nextProject.slug, locale)?.current || ''
               }`}
               className="block group"
             >
               <div className="relative aspect-[4/3] overflow-hidden mb-4">
                 <Image
                   src={urlForImage(nextProject.featuredImage).width(800).url()}
-                  alt={getLocalizedField(nextProject, 'title', locale) || ''}
+                  alt={getLocalizedString(nextProject.title, locale)}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 800px"
                 />
               </div>
               <h3 className="font-serif text-xl md:text-2xl font-bold text-neutral-900 text-center group-hover:text-primary transition-colors">
-                {getLocalizedField(nextProject, 'title', locale)}
+                {getLocalizedString(nextProject.title, locale)}
               </h3>
             </Link>
           </div>

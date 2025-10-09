@@ -24,7 +24,7 @@ export default async function ShopPage({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {products.map((product) => {
             const title = getLocalizedField(product, 'title', locale)
-            const slug = getLocalizedField(product, 'slug', locale)?.current
+            const slug = String(getLocalizedField(product, 'slug', locale))
 
             return (
               <Link

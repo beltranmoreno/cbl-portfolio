@@ -34,7 +34,7 @@ export type {
 const REVALIDATE = process.env.NODE_ENV === 'development' ? 0 : 3600
 
 // Query functions
-export async function getAllProjects(locale: string = 'en'): Promise<Project[]> {
+export async function getAllProjects(): Promise<Project[]> {
   const query = `*[_type == "project"] | order(order asc) {
     _id,
     _type,

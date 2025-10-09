@@ -289,11 +289,11 @@ export default function ArchiveClient({
               'title',
               locale
             )
-            const projectSlug = getLocalizedField(
+            const projectSlug = String(getLocalizedField(
               imageAsset.project,
               'slug',
               locale
-            )?.current
+            ))
             const location = imageAsset.project?.locations?.[0] || ''
 
             return (

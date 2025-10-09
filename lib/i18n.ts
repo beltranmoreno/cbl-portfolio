@@ -1,15 +1,27 @@
 import type { Translations, LocalizedString, LocalizedSlug, LocalizedText, PortableTextBlock } from './types'
+import enCommon from '@/locales/en/common.json'
+import enNavigation from '@/locales/en/navigation.json'
+import esCommon from '@/locales/es/common.json'
+import esNavigation from '@/locales/es/navigation.json'
 
 export const locales = ['en', 'es'] as const
 export const defaultLocale = 'en' as const
 
 export type Locale = (typeof locales)[number]
 
+const translations = {
+  en: {
+    common: enCommon,
+    navigation: enNavigation,
+  },
+  es: {
+    common: esCommon,
+    navigation: esNavigation,
+  },
+}
+
 export function getTranslations(locale: Locale): Translations {
-  return {
-    common: require(`@/locales/${locale}/common.json`),
-    navigation: require(`@/locales/${locale}/navigation.json`),
-  }
+  return translations[locale]
 }
 
 /**
@@ -49,17 +61,18 @@ export function getLocalizedText(
  * Generic localized field getter - tries to get the locale-specific value
  * Use the specific functions above for better type safety
  */
-export function getLocalizedField<T>(
+export function getLocalizedField<T, K extends keyof T>(
   obj: T | undefined,
-  field: keyof T,
+  field: K,
   locale: Locale
-): any {
-  if (!obj || !obj[field]) return null
+): string {
+  if (!obj || !obj[field]) return ''
   const value = obj[field]
   if (typeof value === 'object' && value !== null && locale in value) {
-    return (value as any)[locale]
+    const localized = (value as Record<string, unknown>)[locale]
+    return typeof localized === 'string' ? localized : String(localized || '')
   }
-  return value
+  return typeof value === 'string' ? value : String(value || '')
 }
 
 export function formatProjectYears(

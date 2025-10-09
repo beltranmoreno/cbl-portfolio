@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { urlForImage } from '@/lib/sanity.client'
 import type { ImageAsset } from '@/lib/sanity.queries'
@@ -26,6 +26,14 @@ export default function Lightbox({
 
   const currentImage = images[index]
 
+  const goToNext = useCallback(() => {
+    setIndex((prev) => (prev + 1) % images.length)
+  }, [images.length])
+
+  const goToPrevious = useCallback(() => {
+    setIndex((prev) => (prev - 1 + images.length) % images.length)
+  }, [images.length])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -36,17 +44,9 @@ export default function Lightbox({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [index])
+  }, [goToNext, goToPrevious, onClose])
 
-  const goToNext = () => {
-    setIndex((prev) => (prev + 1) % images.length)
-  }
-
-  const goToPrevious = () => {
-    setIndex((prev) => (prev - 1 + images.length) % images.length)
-  }
-
-  const caption = getLocalizedField(currentImage, 'caption', locale)
+  const caption = String(getLocalizedField(currentImage, 'caption', locale))
 
   return (
     <div
@@ -123,7 +123,7 @@ export default function Lightbox({
       >
         <Image
           src={urlForImage(currentImage.image).width(1920).url()}
-          alt={caption || 'Photography'}
+          alt={caption as string || 'Photography'}
           width={1920}
           height={1080}
           className="max-w-full max-h-full object-contain"

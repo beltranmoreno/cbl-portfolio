@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { Locale, getTranslations, getLocalizedField } from '@/lib/i18n'
-import { getProductBySlug, getAllProducts } from '@/lib/sanity.queries'
+import { getProductBySlug, getAllProducts, type PortableTextBlock } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 import AddToCartButton from './AddToCartButton'
 
@@ -10,10 +10,12 @@ export async function generateStaticParams() {
 
   const params = []
   for (const product of products) {
-    params.push(
-      { locale: 'en', slug: product.slug.en.current },
-      { locale: 'es', slug: product.slug.es.current }
-    )
+    if (product.slug?.en?.current && product.slug?.es?.current) {
+      params.push(
+        { locale: 'en', slug: product.slug.en.current },
+        { locale: 'es', slug: product.slug.es.current }
+      )
+    }
   }
 
   return params
@@ -69,14 +71,14 @@ export default async function ProductPage({
             {/* Description */}
             {description && (
               <div className="prose prose-lg max-w-none border-t border-neutral-200 pt-6">
-                {description.map((block, index) => {
+                {description.map((block: PortableTextBlock, index: number) => {
                   if (block._type === 'block') {
                     return (
                       <p
                         key={index}
                         className="text-neutral-700 leading-relaxed mb-4"
                       >
-                        {block.children.map((child) => child.text).join('')}
+                        {block.children?.map((child) => child.text).join('')}
                       </p>
                     )
                   }
@@ -140,8 +142,8 @@ export default async function ProductPage({
                 </p>
                 <a
                   href={`/${locale}/projects/${
-                    getLocalizedField(product.relatedProject, 'slug', locale)
-                      ?.current
+                    (getLocalizedField(product.relatedProject, 'slug', locale) as { current?: string } | null)
+                      ?.current || ''
                   }`}
                   className="text-primary hover:text-primary-dark font-medium transition-colors"
                 >

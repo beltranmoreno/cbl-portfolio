@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Locale, getTranslations, getLocalizedField, formatProjectYears } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedField, getLocalizedText, getLocalizedSlug, formatProjectYears } from '@/lib/i18n'
 import { getSiteSettings, getAllProjects, type PortableTextBlock } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 
@@ -12,9 +12,9 @@ export default async function AboutPage({
   const { locale } = await params
   const translations = getTranslations(locale)
   const siteSettings = await getSiteSettings()
-  const allProjects = await getAllProjects(locale)
+  const allProjects = await getAllProjects()
 
-  const bio = getLocalizedField(siteSettings, 'aboutBio', locale)
+  const bio = getLocalizedText(siteSettings?.aboutBio, locale)
 
   // Sort projects by year for timeline
   const timelineProjects = [...allProjects].sort((a, b) => {
@@ -113,7 +113,7 @@ export default async function AboutPage({
           <div className="space-y-12 md:space-y-16">
             {timelineProjects.map((project, index) => {
               const title = getLocalizedField(project, 'title', locale)
-              const slug = getLocalizedField(project, 'slug', locale)?.current
+              const slug = getLocalizedSlug(project.slug, locale)?.current
               const isLeft = index % 2 === 0
 
               return (

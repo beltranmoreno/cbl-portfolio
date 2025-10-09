@@ -25,10 +25,6 @@ export default function ProgressBar() {
       }
     }
 
-    const handleRouteChange = () => {
-      NProgress.done()
-    }
-
     // Add click listeners to all links
     document.querySelectorAll('a[href^="/"]').forEach((anchor) => {
       anchor.addEventListener('click', handleAnchorClick as EventListener)
