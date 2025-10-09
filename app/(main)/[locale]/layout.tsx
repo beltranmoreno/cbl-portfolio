@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
 import type { Metadata } from 'next'
-import Navigation from '@/components/Navigation'
 import FloatingNav from '@/components/FloatingNav'
 import Footer from '@/components/Footer'
 import ProgressBar from '@/components/ProgressBar'
