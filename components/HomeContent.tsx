@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Locale, getLocalizedString, getLocalizedSlug } from '@/lib/i18n'
@@ -22,6 +22,38 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
   const handleImageClick = (image: ImageAsset) => {
     setSelectedImage(image)
   }
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return
+
+      const currentIndex = featuredImages.findIndex((img) => img._id === selectedImage._id)
+      if (currentIndex === -1) return
+
+      let newIndex = currentIndex
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault()
+          newIndex = (currentIndex + 1) % featuredImages.length
+          break
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault()
+          newIndex = (currentIndex - 1 + featuredImages.length) % featuredImages.length
+          break
+        default:
+          return
+      }
+
+      setSelectedImage(featuredImages[newIndex])
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedImage, featuredImages])
 
   const selectedCaption = selectedImage ? getLocalizedString(selectedImage.caption, locale) : ''
   const selectedProjectTitle = selectedImage ? getLocalizedString(selectedImage.project.title, locale) : ''
@@ -103,7 +135,7 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
       {/* Desktop Layout - Split Screen */}
       <div className="hidden lg:flex h-screen sticky top-0">
         {/* Left: Masonry Grid - 50% */}
-        <div className="w-1/2 overflow-y-auto px-6 py-8">
+        <div className="w-1/2 overflow-y-auto scrollbar-hide px-6 py-8">
           <MasonryGrid>
             {featuredImages.map((imageAsset) => {
               const projectTitle = getLocalizedString(imageAsset.project.title, locale)
@@ -115,7 +147,7 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
                 <button
                   key={imageAsset._id}
                   onClick={() => handleImageClick(imageAsset)}
-                  className={`mb-6 block w-full text-left transition-all ${
+                  className={`mb-6 block w-full text-left transition-all ring-0 ${
                     isSelected ? 'scale-105' : 'opacity-90 hover:opacity-100 hover:scale-102'
                   }`}
                 >
@@ -137,7 +169,7 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
         </div>
 
         {/* Right: Spotlight Image - 50% */}
-        <div className="w-1/2 flex items-center justify-center bg-neutral-50 p-12 sticky top-0 h-[calc(100vh-var(--nav-height))]">
+        <div className="w-1/2 flex items-center justify-center bg-neutral-50 p-12 sticky top-0 h-100vh">
           {selectedImage && (
             <Link href={`/${locale}/projects/${selectedProjectSlug}`} className="w-full h-full flex flex-col">
               <div className="flex-1 flex items-center justify-center">

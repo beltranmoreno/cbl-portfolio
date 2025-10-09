@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import Navigation from '@/components/Navigation'
+import FloatingNav from '@/components/FloatingNav'
 import Footer from '@/components/Footer'
 import ProgressBar from '@/components/ProgressBar'
 import { NavigationProvider } from '@/contexts/NavigationContext'
@@ -51,7 +52,8 @@ export default async function LocaleLayout({
   return (
     <NavigationProvider>
       <ProgressBar />
-      <Navigation locale={locale} translations={translations.navigation} />
+      {/* <Navigation locale={locale} translations={translations.navigation} /> */}
+      <FloatingNav locale={locale} translations={translations.navigation} />
       <main id="main-content">{children}</main>
       <Footer
         locale={locale}
