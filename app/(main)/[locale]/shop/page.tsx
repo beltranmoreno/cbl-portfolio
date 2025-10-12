@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Locale, getTranslations, getLocalizedField } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedField, getLocalizedSlug } from '@/lib/i18n'
 import { getAllProducts } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 
@@ -25,7 +25,7 @@ export default async function ShopPage({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {products.map((product) => {
             const title = getLocalizedField(product, 'title', locale)
-            const slug = String(getLocalizedField(product, 'slug', locale))
+            const slug = getLocalizedSlug(product.slug, locale)?.current || ''
 
             return (
               <Link

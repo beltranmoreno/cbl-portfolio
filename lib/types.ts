@@ -167,6 +167,27 @@ export interface SocialLink {
 }
 
 /**
+ * Exhibition entry
+ */
+export interface Exhibition {
+  title: LocalizedString
+  venue: LocalizedString
+  location: string
+  year: number
+  type: 'solo' | 'group'
+}
+
+/**
+ * Award/Recognition entry
+ */
+export interface Award {
+  title: LocalizedString
+  organization: LocalizedString
+  year: number
+  description?: LocalizedText
+}
+
+/**
  * Site-wide settings
  */
 export interface SiteSettings {
@@ -178,6 +199,8 @@ export interface SiteSettings {
   contactEmail?: string
   socialLinks?: SocialLink[]
   featuredProjects?: FeaturedProject[]
+  exhibitions?: Exhibition[]
+  awards?: Award[]
 }
 
 /**

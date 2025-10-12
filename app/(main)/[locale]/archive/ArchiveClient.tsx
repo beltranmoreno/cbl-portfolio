@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Locale, getLocalizedField } from '@/lib/i18n'
+import { Locale, getLocalizedField, getLocalizedSlug } from '@/lib/i18n'
 import type { ImageAsset, CommonTranslations } from '@/lib/types'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
@@ -289,11 +289,10 @@ export default function ArchiveClient({
               'title',
               locale
             )
-            const projectSlug = String(getLocalizedField(
-              imageAsset.project,
-              'slug',
+            const projectSlug = getLocalizedSlug(
+              imageAsset.project?.slug,
               locale
-            ))
+            )?.current || ''
             const location = imageAsset.project?.locations?.[0] || ''
 
             return (
