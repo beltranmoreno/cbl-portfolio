@@ -18,8 +18,8 @@ export async function generateStaticParams() {
   for (const project of projects) {
     if (project.slug?.en?.current && project.slug?.es?.current) {
       params.push(
-        { locale: 'en', slug: project.slug.en.current },
-        { locale: 'es', slug: project.slug.es.current }
+        { locale: 'en' as Locale, slug: project.slug.en.current },
+        { locale: 'es' as Locale, slug: project.slug.es.current }
       )
     }
   }

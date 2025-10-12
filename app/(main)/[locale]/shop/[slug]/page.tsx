@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import { Locale, getTranslations, getLocalizedField } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedField, getLocalizedText } from '@/lib/i18n'
 import { getProductBySlug, getAllProducts, type PortableTextBlock } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 import AddToCartButton from './AddToCartButton'
@@ -12,8 +12,8 @@ export async function generateStaticParams() {
   for (const product of products) {
     if (product.slug?.en?.current && product.slug?.es?.current) {
       params.push(
-        { locale: 'en', slug: product.slug.en.current },
-        { locale: 'es', slug: product.slug.es.current }
+        { locale: 'en' as Locale, slug: product.slug.en.current },
+        { locale: 'es' as Locale, slug: product.slug.es.current }
       )
     }
   }
@@ -35,7 +35,7 @@ export default async function ProductPage({
   }
 
   const title = getLocalizedField(product, 'title', locale)
-  const description = getLocalizedField(product, 'description', locale)
+  const description = getLocalizedText(product.description, locale)
 
   return (
     <div className="min-h-screen">

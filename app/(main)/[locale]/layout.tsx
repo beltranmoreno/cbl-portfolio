@@ -7,8 +7,8 @@ import { NavigationProvider } from '@/contexts/NavigationContext'
 import { Locale, locales, getTranslations } from '@/lib/i18n'
 import { getSiteSettings } from '@/lib/sanity.queries'
 
-export async function generateStaticParams(): Promise<{ locale: Locale }[]> {
-  return locales.map((locale) => ({ locale }))
+export async function generateStaticParams() {
+  return locales.map((locale) => ({ locale: locale as Locale }))
 }
 
 export async function generateMetadata({
