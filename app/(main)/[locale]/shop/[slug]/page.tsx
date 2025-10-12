@@ -26,9 +26,11 @@ export async function generateStaticParams() {
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ locale: Locale; slug: string }>
+  params: Promise<{ locale: string; slug: string }>
 }) {
-  const { locale, slug } = await params
+  const resolvedParams = await params
+  const locale = resolvedParams.locale as Locale
+  const slug = resolvedParams.slug
   const translations = getTranslations(locale)
   const product = await getProductBySlug(slug, locale)
 

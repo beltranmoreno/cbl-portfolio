@@ -7,9 +7,10 @@ import { urlForImage } from '@/lib/sanity.client'
 export default async function AboutPage({
   params,
 }: {
-  params: Promise<{ locale: Locale }>
+  params: Promise<{ locale: string }>
 }) {
-  const { locale } = await params
+  const resolvedParams = await params
+  const locale = resolvedParams.locale as Locale
   const translations = getTranslations(locale)
   const siteSettings = await getSiteSettings()
   const allProjects = await getAllProjects()

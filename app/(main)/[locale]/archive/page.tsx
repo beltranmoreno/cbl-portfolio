@@ -5,9 +5,10 @@ import ArchiveClient from './ArchiveClient'
 export default async function ArchivePage({
   params,
 }: {
-  params: Promise<{ locale: Locale }>
+  params: Promise<{ locale: string }>
 }) {
-  const { locale } = await params
+  const resolvedParams = await params
+  const locale = resolvedParams.locale as Locale
   const translations = getTranslations(locale)
   const allImages = await getAllImages()
 

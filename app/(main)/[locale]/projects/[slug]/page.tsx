@@ -32,9 +32,11 @@ export async function generateStaticParams() {
 export default async function ProjectPage({
   params,
 }: {
-  params: Promise<{ locale: Locale; slug: string }>
+  params: Promise<{ locale: string; slug: string }>
 }) {
-  const { locale, slug } = await params
+  const resolvedParams = await params
+  const locale = resolvedParams.locale as Locale
+  const slug = resolvedParams.slug
   const translations = getTranslations(locale)
   const projectData = await getProjectBySlug(slug, locale)
 
@@ -46,7 +48,9 @@ export default async function ProjectPage({
 
   const title = getLocalizedString(project.title, locale)
   const description = getLocalizedText(project.description, locale)
-  const publications = project.publications?.map(pub => getLocalizedString(pub, locale)) || []
+  const publications = Array.isArray(project.publications)
+    ? project.publications.map(pub => getLocalizedString(pub, locale))
+    : []
 
   // Get next project (for "Next Project" link)
   const allProjects = await getAllProjects()

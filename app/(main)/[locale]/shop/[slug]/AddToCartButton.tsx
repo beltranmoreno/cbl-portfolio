@@ -15,7 +15,7 @@ export default function AddToCartButton({
   locale,
   translations,
 }: AddToCartButtonProps) {
-  const [selectedVariant, setSelectedVariant] = useState<number | null>(null)
+  const [selectedVariant] = useState<number | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
 

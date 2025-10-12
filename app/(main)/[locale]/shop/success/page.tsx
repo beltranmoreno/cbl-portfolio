@@ -5,10 +5,11 @@ export default async function SuccessPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: Locale }>
+  params: Promise<{ locale: string }>
   searchParams: Promise<{ session_id?: string }>
 }) {
-  const { locale } = await params
+  const resolvedParams = await params
+  const locale = resolvedParams.locale as Locale
   const { session_id } = await searchParams
 
   return (

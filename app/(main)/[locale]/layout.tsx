@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, Suspense } from 'react'
 import type { Metadata } from 'next'
 import FloatingNav from '@/components/FloatingNav'
 import Footer from '@/components/Footer'
@@ -16,7 +16,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: Locale }>
+  params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
 
@@ -44,15 +44,18 @@ export default async function LocaleLayout({
   params,
 }: {
   children: ReactNode
-  params: Promise<{ locale: Locale }>
+  params: Promise<{ locale: string }>
 }) {
-  const { locale } = await params
+  const resolvedParams = await params
+  const locale = resolvedParams.locale as Locale
   const translations = getTranslations(locale)
   const siteSettings = await getSiteSettings()
 
   return (
     <NavigationProvider>
-      <ProgressBar />
+      <Suspense fallback={null}>
+        <ProgressBar />
+      </Suspense>
       {/* <Navigation locale={locale} translations={translations.navigation} /> */}
       <FloatingNav locale={locale} translations={translations.navigation} />
       <main id="main-content">{children}</main>
