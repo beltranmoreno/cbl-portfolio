@@ -5,6 +5,8 @@ import { getProductBySlug, getAllProducts, type PortableTextBlock } from '@/lib/
 import { urlForImage } from '@/lib/sanity.client'
 import AddToCartButton from './AddToCartButton'
 
+export const dynamicParams = false
+
 export async function generateStaticParams() {
   const products = await getAllProducts()
 

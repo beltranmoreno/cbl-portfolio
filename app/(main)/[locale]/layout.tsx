@@ -7,7 +7,9 @@ import { NavigationProvider } from '@/contexts/NavigationContext'
 import { Locale, locales, getTranslations } from '@/lib/i18n'
 import { getSiteSettings } from '@/lib/sanity.queries'
 
-export async function generateStaticParams(): Promise<Array<{ locale: Locale }>> {
+export const dynamicParams = false
+
+export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }))
 }
 

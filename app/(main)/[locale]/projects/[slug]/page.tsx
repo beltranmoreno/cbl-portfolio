@@ -11,6 +11,8 @@ type ProjectWithImages = Project & {
   images?: ImageAsset[]
 }
 
+export const dynamicParams = false
+
 export async function generateStaticParams() {
   const projects = await getAllProjects()
 
