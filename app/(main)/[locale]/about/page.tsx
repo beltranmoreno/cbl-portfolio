@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Locale, getTranslations, getLocalizedField, getLocalizedText, getLocalizedSlug, formatProjectYears } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedField, getLocalizedText, getLocalizedSlug, formatProjectYears, getLocalizedString } from '@/lib/i18n'
 import { getSiteSettings, getAllProjects, type PortableTextBlock } from '@/lib/sanity.queries'
 import { urlForImage } from '@/lib/sanity.client'
 
@@ -100,6 +100,110 @@ export default async function AboutPage({
         </div>
       </section>
 
+      {/* Exhibitions Section */}
+      {siteSettings?.exhibitions && siteSettings.exhibitions.length > 0 && (
+        <section className="container py-12 md:py-20 border-t border-neutral-200">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-neutral-900 mb-12 text-center">
+            {locale === 'en' ? 'Notable Exhibitions' : 'Exposiciones Destacadas'}
+          </h2>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-6">
+              {siteSettings.exhibitions
+                .sort((a, b) => b.year - a.year)
+                .map((exhibition, index) => {
+                  const title = getLocalizedString(exhibition.title, locale)
+                  const venue = getLocalizedString(exhibition.venue, locale)
+
+                  return (
+                    <div
+                      key={index}
+                      className="border-l-4 border-primary pl-6 py-2"
+                    >
+                      <div className="flex flex-wrap items-baseline gap-2 mb-1">
+                        <h3 className="font-serif text-xl font-bold text-neutral-900">
+                          {title}
+                        </h3>
+                        <span className="text-primary font-bold">
+                          {exhibition.year}
+                        </span>
+                      </div>
+                      <p className="text-neutral-700">
+                        {venue}
+                        {exhibition.location && `, ${exhibition.location}`}
+                      </p>
+                      {exhibition.type && (
+                        <p className="text-sm text-neutral-500 mt-1">
+                          {exhibition.type === 'solo'
+                            ? locale === 'en' ? 'Solo Exhibition' : 'Exposición Individual'
+                            : locale === 'en' ? 'Group Exhibition' : 'Exposición Colectiva'}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Awards Section */}
+      {siteSettings?.awards && siteSettings.awards.length > 0 && (
+        <section className="container py-12 md:py-20 border-t border-neutral-200">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-neutral-900 mb-12 text-center">
+            {locale === 'en' ? 'Awards & Recognitions' : 'Premios y Reconocimientos'}
+          </h2>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-8">
+              {siteSettings.awards
+                .sort((a, b) => b.year - a.year)
+                .map((award, index) => {
+                  const title = getLocalizedString(award.title, locale)
+                  const organization = getLocalizedString(award.organization, locale)
+                  const description = award.description ? getLocalizedText(award.description, locale) : null
+
+                  return (
+                    <div
+                      key={index}
+                      className="border-l-4 border-primary pl-6 py-2"
+                    >
+                      <div className="flex flex-wrap items-baseline gap-2 mb-1">
+                        <h3 className="font-serif text-xl font-bold text-neutral-900">
+                          {title}
+                        </h3>
+                        <span className="text-primary font-bold">
+                          {award.year}
+                        </span>
+                      </div>
+                      <p className="text-neutral-700 mb-2">
+                        {organization}
+                      </p>
+                      {description && description.length > 0 && (
+                        <div className="prose prose-sm max-w-none">
+                          {description.map((block: PortableTextBlock, blockIndex: number) => {
+                            if (block._type === 'block') {
+                              return (
+                                <p
+                                  key={blockIndex}
+                                  className="text-neutral-600 leading-relaxed"
+                                >
+                                  {block.children?.map((child) => child.text).join('')}
+                                </p>
+                              )
+                            }
+                            return null
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Timeline Section */}
       <section className="container py-12 md:py-20 border-t border-neutral-200">
         <h2 className="font-serif text-3xl md:text-4xl font-bold text-neutral-900 mb-12 text-center">
@@ -146,15 +250,15 @@ export default async function AboutPage({
                       href={`/${locale}/projects/${slug}`}
                       className="block group"
                     >
-                      <div className="relative aspect-square overflow-hidden mb-4">
+                      <div className="relative overflow-hidden mb-4">
                         <Image
                           src={urlForImage(project.featuredImage)
-                            .width(400)
-                            .height(400)
+                            .width(600)
                             .url()}
                           alt={title || 'Project'}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          width={600}
+                          height={800}
+                          className="w-full h-auto transition-transform duration-300"
                           sizes="(max-width: 768px) 100vw, 400px"
                         />
                       </div>

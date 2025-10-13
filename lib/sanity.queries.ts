@@ -140,6 +140,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     aboutImage,
     contactEmail,
     socialLinks,
+    exhibitions,
+    awards,
     "featuredProjects": featuredProjects[]->  {
       _id,
       title,
