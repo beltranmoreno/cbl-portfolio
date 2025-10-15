@@ -49,10 +49,10 @@ export default function ProjectGallery({
                   />
                 </div>
 
-                {/* Caption overlay on hover */}
+                {/* Caption overlay on hover - bottom left with gradient */}
                 {caption && (
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
-                    <p className="text-white text-center font-sans text-sm">
+                  <div className="absolute bottom-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-16 pb-4 px-4">
+                    <p className="text-white font-sans text-sm">
                       {caption}
                     </p>
                   </div>
