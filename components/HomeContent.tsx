@@ -7,18 +7,21 @@ import { Locale, getLocalizedString, getLocalizedSlug } from '@/lib/i18n'
 import { urlForImage } from '@/lib/sanity.client'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
+import Lightbox from '@/components/Lightbox'
 import type { ImageAsset } from '@/lib/sanity.queries'
 
 interface HomeContentProps {
   featuredImages: ImageAsset[]
   locale: Locale
+  availableAsPrintText: string
 }
 
-export default function HomeContent({ featuredImages, locale }: HomeContentProps) {
+export default function HomeContent({ featuredImages, locale, availableAsPrintText }: HomeContentProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAsset | null>(
     featuredImages[0] || null
   )
   const [isSpotlightLoading, setIsSpotlightLoading] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const selectImage = (image: ImageAsset) => {
     if (selectedImage?._id === image._id) return
@@ -65,64 +68,25 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
 
   return (
     <section className="py-8 md:py-0">
-      {/* Mobile Layout - Stacked */}
+      {/* Mobile Layout — masonry only; tap an image to open the lightbox */}
       <div className="lg:hidden container">
-        {/* Selected Image - Top on Mobile */}
-        {selectedImage && (
-          <div className="mb-8">
-            <Link href={`/${locale}/projects/${selectedProjectSlug}`}>
-              <div className="frame-wood">
-                <div className="frame-mat">
-                  <div className="relative overflow-hidden">
-                    <Image
-                      src={urlForImage(selectedImage.image).width(1200).url()}
-                      alt={selectedCaption || selectedProjectTitle || 'Photography'}
-                      width={1200}
-                      height={800}
-                      className={`w-full h-auto object-cover transition-[filter] duration-500 ${
-                        isSpotlightLoading ? 'blur-lg' : 'blur-0'
-                      }`}
-                      priority
-                      placeholder={selectedImage.image.metadata?.lqip ? 'blur' : 'empty'}
-                      blurDataURL={selectedImage.image.metadata?.lqip}
-                      onLoad={() => setIsSpotlightLoading(false)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Link>
-            {/* Wall placard */}
-            <div className="mt-3 text-right">
-              {selectedCaption && (
-                <p className="font-serif italic text-base text-neutral-800 leading-tight">
-                  {selectedCaption}
-                </p>
-              )}
-              {selectedProjectTitle && (
-                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-neutral-500">
-                  {selectedProjectTitle}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Grid - Bottom on Mobile */}
         <MasonryGrid>
-          {featuredImages.map((imageAsset) => {
+          {featuredImages.map((imageAsset, index) => {
             const projectTitle = getLocalizedString(imageAsset.project.title, locale)
             const caption = getLocalizedString(imageAsset.caption, locale)
             const firstLoc = imageAsset.project?.locations?.[0]
             const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
-            const isSelected = selectedImage?._id === imageAsset._id
 
             return (
               <button
                 key={imageAsset._id}
-                onClick={() => selectImage(imageAsset)}
-                className={`mb-4 md:mb-6 block w-full text-left transition-opacity ${
-                  isSelected ? 'ring-2 ring-primary' : 'opacity-60 hover:opacity-100'
-                }`}
+                onClick={() => setLightboxIndex(index)}
+                className="mb-4 md:mb-6 block w-full text-left active:opacity-90 transition-opacity"
+                aria-label={
+                  caption
+                    ? `${caption} — ${projectTitle}`
+                    : projectTitle || 'Photograph'
+                }
               >
                 <ImageWithBorder
                   image={imageAsset.image}
@@ -223,6 +187,17 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
           )}
         </div>
       </div>
+
+      {/* Mobile lightbox — opened when a thumbnail is tapped */}
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={featuredImages}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          locale={locale}
+          availableAsPrintText={availableAsPrintText}
+        />
+      )}
     </section>
   )
 }

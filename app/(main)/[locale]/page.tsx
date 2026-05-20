@@ -49,6 +49,7 @@ export default async function HomePage({
       <HomeContent
         featuredImages={featuredImages}
         locale={locale}
+        availableAsPrintText={translations.common.availableAsPrint}
       />
 
       {/* Featured Projects */}

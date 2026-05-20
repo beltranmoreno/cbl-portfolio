@@ -14,7 +14,7 @@ const breakpointColumns = {
   1280: 3,
   1024: 3,
   768: 2,
-  640: 1,
+  640: 2,
 }
 
 export default function MasonryGrid({ children, className = '' }: MasonryGridProps) {
