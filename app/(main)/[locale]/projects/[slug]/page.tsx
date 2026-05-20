@@ -1,10 +1,46 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Locale, getTranslations, getLocalizedString, getLocalizedText, getLocalizedSlug, formatProjectYears } from '@/lib/i18n'
 import { getProjectBySlug, getAllProjects, type PortableTextBlock, type Project, type ImageAsset } from '@/lib/sanity.queries'
+import { buildMetadata, extractPortableTextSummary } from '@/lib/seo'
 import { urlForImage } from '@/lib/sanity.client'
 import ProjectGallery from './ProjectGallery'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>
+}): Promise<Metadata> {
+  const { locale, slug } = await params
+  const l = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
+  const project = await getProjectBySlug(slug, l)
+  if (!project) {
+    return buildMetadata({
+      title: l === 'es' ? 'Proyecto no encontrado' : 'Project Not Found',
+      pathEn: 'projects/' + slug,
+      pathEs: 'projects/' + slug,
+      locale: l,
+      noIndex: true,
+    })
+  }
+  const title = getLocalizedString(project.title, l)
+  const description =
+    extractPortableTextSummary(getLocalizedText(project.description, l)) ||
+    undefined
+  const slugEn = project.slug?.en?.current || slug
+  const slugEs = project.slug?.es?.current || slug
+  return buildMetadata({
+    title,
+    description,
+    pathEn: `projects/${slugEn}`,
+    pathEs: `projects/${slugEs}`,
+    locale: l,
+    image: project.featuredImage,
+    ogType: 'article',
+  })
+}
 
 // Extended Project type with images
 type ProjectWithImages = Project & {
@@ -52,123 +88,128 @@ export default async function ProjectPage({
     ? project.publications.map(pub => getLocalizedString(pub, locale))
     : []
 
-  // Get next project (for "Next Project" link)
+  // Get next project (wraps to the first), but skip if it would be the current one.
   const allProjects = await getAllProjects()
   const currentIndex = allProjects.findIndex((p) => p._id === project._id)
+  const candidate =
+    currentIndex >= 0
+      ? allProjects[(currentIndex + 1) % allProjects.length]
+      : null
   const nextProject =
-    currentIndex < allProjects.length - 1
-      ? allProjects[currentIndex + 1]
-      : allProjects[0]
+    candidate && candidate._id !== project._id ? candidate : null
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative w-full h-[60vh] md:h-[80vh]">
-        <Image
-          src={urlForImage(project.featuredImage).width(1920).url()}
-          alt={title || 'Project'}
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
+      {/* Hero: image + title/meta/description side by side */}
+      <section className="container pt-8 md:pt-12 pb-10 md:pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start">
+          {/* Cover image */}
+          <div className="md:col-span-7 relative aspect-[3/2] overflow-hidden">
+            <Image
+              src={urlForImage(project.featuredImage).width(1400).url()}
+              alt={title || 'Project'}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 58vw"
+            />
+          </div>
 
-        {/* Metadata Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 md:p-12">
-          <div className="container">
-            <h1 className="font-serif text-4xl md:text-6xl font-bold text-white mb-4">
+          {/* Title + metadata + description */}
+          <div className="md:col-span-5">
+            <h1 className="font-serif text-3xl md:text-5xl font-bold text-neutral-900 leading-tight mb-3">
               {title}
             </h1>
-            <div className="flex flex-wrap gap-4 text-white/90 text-sm md:text-base mb-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-neutral-600 text-sm md:text-base mb-6">
               <span>{formatProjectYears(project.startYear, project.endYear, project.isOngoing, locale)}</span>
               {project.locations && project.locations.length > 0 && (
                 <>
-                  <span>•</span>
-                  <span>{project.locations.join(', ')}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    {project.locations
+                      .map((loc) => getLocalizedString(loc.name, locale))
+                      .filter(Boolean)
+                      .join(', ')}
+                  </span>
                 </>
               )}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Project Info */}
-      <section className="container py-12 md:py-16">
-        <div className="max-w-3xl mx-auto">
-          {/* Description */}
-          {description && description.length > 0 && (
-            <div className="prose prose-lg max-w-none mb-8">
-              {description.map((block: PortableTextBlock, index: number) => {
-                if (block._type === 'block') {
-                  return (
-                    <p key={index} className="text-neutral-700 leading-relaxed">
-                      {block.children?.map((child) => child.text).join('')}
-                    </p>
-                  )
-                }
-                return null
-              })}
-            </div>
-          )}
-
-          {/* Metadata Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 border-t border-neutral-200">
-            {project.primaryMedium && (
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wide text-neutral-500 mb-2">
-                  {locale === 'en' ? 'Medium' : 'Medio'}
-                </h3>
-                <p className="text-neutral-900">
-                  {project.primaryMedium === 'film-bw'
-                    ? locale === 'en'
-                      ? 'Film - Black & White'
-                      : 'Película - Blanco y Negro'
-                    : project.primaryMedium === 'digital-bw'
-                    ? locale === 'en'
-                      ? 'Digital - Black & White'
-                      : 'Digital - Blanco y Negro'
-                    : locale === 'en'
-                    ? 'Mixed Media'
-                    : 'Medios Mixtos'}
-                </p>
+            {description && description.length > 0 && (
+              <div className="prose max-w-none">
+                {description.map((block: PortableTextBlock, index: number) => {
+                  if (block._type === 'block') {
+                    return (
+                      <p key={index} className="text-neutral-700 leading-relaxed">
+                        {block.children?.map((child) => child.text).join('')}
+                      </p>
+                    )
+                  }
+                  return null
+                })}
               </div>
             )}
 
-            {project.images && (
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wide text-neutral-500 mb-2">
-                  {locale === 'en' ? 'Images' : 'Imágenes'}
-                </h3>
-                <p className="text-neutral-900">
-                  {project.images.length}{' '}
-                  {locale === 'en' ? 'photographs' : 'fotografías'}
-                </p>
-              </div>
-            )}
+            {/* Metadata stack — under the description */}
+            <dl className="mt-8 pt-6 border-t border-neutral-200 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+              {project.primaryMedium && (
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-1">
+                    {locale === 'en' ? 'Medium' : 'Medio'}
+                  </dt>
+                  <dd className="text-neutral-900">
+                    {project.primaryMedium === 'film-bw'
+                      ? locale === 'en'
+                        ? 'Film - Black & White'
+                        : 'Película - Blanco y Negro'
+                      : project.primaryMedium === 'digital-bw'
+                      ? locale === 'en'
+                        ? 'Digital - Black & White'
+                        : 'Digital - Blanco y Negro'
+                      : locale === 'en'
+                      ? 'Mixed Media'
+                      : 'Medios Mixtos'}
+                  </dd>
+                </div>
+              )}
 
-            {project.collaborators && project.collaborators.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wide text-neutral-500 mb-2">
-                  {locale === 'en' ? 'Collaborators' : 'Colaboradores'}
-                </h3>
-                <p className="text-neutral-900">
-                  {project.collaborators.join(', ')}
-                </p>
-              </div>
-            )}
+              {project.images && (
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-1">
+                    {locale === 'en' ? 'Images' : 'Imágenes'}
+                  </dt>
+                  <dd className="text-neutral-900">
+                    {project.images.length}{' '}
+                    {locale === 'en' ? 'photographs' : 'fotografías'}
+                  </dd>
+                </div>
+              )}
 
-            {publications && publications.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wide text-neutral-500 mb-2">
-                  {locale === 'en' ? 'Publications' : 'Publicaciones'}
-                </h3>
-                <ul className="text-neutral-900">
-                  {publications.map((pub: string, index: number) => (
-                    <li key={index}>{pub}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              {project.collaborators && project.collaborators.length > 0 && (
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-1">
+                    {locale === 'en' ? 'Collaborators' : 'Colaboradores'}
+                  </dt>
+                  <dd className="text-neutral-900">
+                    {project.collaborators.join(', ')}
+                  </dd>
+                </div>
+              )}
+
+              {publications && publications.length > 0 && (
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-1">
+                    {locale === 'en' ? 'Publications' : 'Publicaciones'}
+                  </dt>
+                  <dd className="text-neutral-900">
+                    <ul>
+                      {publications.map((pub: string, index: number) => (
+                        <li key={index}>{pub}</li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              )}
+            </dl>
           </div>
         </div>
       </section>
@@ -206,7 +247,7 @@ export default async function ProjectPage({
               }`}
               className="block group"
             >
-              <div className="relative aspect-[4/3] overflow-hidden mb-4">
+              <div className="relative aspect-[3/2] overflow-hidden mb-4">
                 <Image
                   src={urlForImage(nextProject.featuredImage).width(800).url()}
                   alt={getLocalizedString(nextProject.title, locale)}

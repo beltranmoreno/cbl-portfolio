@@ -13,14 +13,15 @@ export default function FeaturedProjectCard({ project, locale }: FeaturedProject
   const title = getLocalizedString(project.title, locale)
   const slug = getLocalizedSlug(project.slug, locale)?.current || ''
   const description = getLocalizedText(project.description, locale)
-  const location = project.locations?.[0] || ''
+  const firstLocation = project.locations?.[0]
+  const location = firstLocation ? getLocalizedString(firstLocation.name, locale) : ''
 
   return (
     <Link
       href={`/${locale}/projects/${slug}`}
       className="group"
     >
-      <div className="relative overflow-hidden mb-4 w-full h-full min-h-[400px] md:min-h-[500px]">
+      <div className="relative overflow-hidden mb-4 w-full aspect-[3/2]">
         <Image
           src={urlForImage(project.featuredImage).width(1200).url()}
           alt={title || 'Project'}

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { client } from './sanity.client'
 import type {
   LocalizedString,
@@ -7,6 +8,9 @@ import type {
   SanityImage,
   Project,
   ImageAsset,
+  ImageMedium,
+  DatePrecision,
+  Location,
   Product,
   ProductVariant,
   SiteSettings,
@@ -23,6 +27,9 @@ export type {
   SanityImage,
   Project,
   ImageAsset,
+  ImageMedium,
+  DatePrecision,
+  Location,
   Product,
   ProductVariant,
   SiteSettings,
@@ -30,11 +37,16 @@ export type {
   SocialLink,
 }
 
+// Standard projection for location references
+const LOCATION_PROJECTION = `locations[]->{ _id, _type, name, slug }`
+
 // Cache revalidation: no cache in development, 3600s in production
 const REVALIDATE = process.env.NODE_ENV === 'development' ? 0 : 3600
 
-// Query functions
-export async function getAllProjects(): Promise<Project[]> {
+// Query functions. Each wrapped with React `cache()` so calling the same
+// function with the same arguments during one render (e.g. once in
+// generateMetadata and once in the page component) only fetches Sanity once.
+export const getAllProjects = cache(async function getAllProjects(): Promise<Project[]> {
   const query = `*[_type == "project"] | order(order asc) {
     _id,
     _type,
@@ -43,7 +55,7 @@ export async function getAllProjects(): Promise<Project[]> {
     startYear,
     endYear,
     isOngoing,
-    locations,
+    ${LOCATION_PROJECTION},
     description,
     featuredImage,
     primaryMedium,
@@ -55,9 +67,9 @@ export async function getAllProjects(): Promise<Project[]> {
   }`
 
   return client.fetch(query, {}, { next: { revalidate: REVALIDATE } })
-}
+})
 
-export async function getProjectBySlug(slug: string, locale: string = 'en'): Promise<Project | null> {
+export const getProjectBySlug = cache(async function getProjectBySlug(slug: string, locale: string = 'en'): Promise<Project | null> {
   const query = `*[_type == "project" && slug.${locale}.current == $slug][0] {
     _id,
     _type,
@@ -66,7 +78,7 @@ export async function getProjectBySlug(slug: string, locale: string = 'en'): Pro
     startYear,
     endYear,
     isOngoing,
-    locations,
+    ${LOCATION_PROJECTION},
     description,
     featuredImage,
     primaryMedium,
@@ -79,6 +91,8 @@ export async function getProjectBySlug(slug: string, locale: string = 'en'): Pro
       caption,
       medium,
       filmFormat,
+      date,
+      datePrecision,
       tags,
       availableAsPrint,
       order
@@ -87,20 +101,22 @@ export async function getProjectBySlug(slug: string, locale: string = 'en'): Pro
   }`
 
   return client.fetch(query, { slug }, { next: { revalidate: REVALIDATE } })
-}
+})
 
-export async function getFeaturedImages(): Promise<ImageAsset[]> {
+export const getFeaturedImages = cache(async function getFeaturedImages(): Promise<ImageAsset[]> {
   const query = `*[_type == "imageAsset" && isFeatured == true] {
     _id,
     image,
     caption,
     medium,
     filmFormat,
+    date,
+    datePrecision,
     project->{
       _id,
       title,
       slug,
-      locations,
+      ${LOCATION_PROJECTION},
       startYear,
       endYear,
       isOngoing
@@ -108,21 +124,23 @@ export async function getFeaturedImages(): Promise<ImageAsset[]> {
   }`
 
   return client.fetch(query, {}, { next: { revalidate: REVALIDATE } })
-}
+})
 
-export async function getAllImages(): Promise<ImageAsset[]> {
+export const getAllImages = cache(async function getAllImages(): Promise<ImageAsset[]> {
   const query = `*[_type == "imageAsset"] | order(project->startYear desc, order asc) {
     _id,
     image,
     caption,
     medium,
     filmFormat,
+    date,
+    datePrecision,
     tags,
     project->{
       _id,
       title,
       slug,
-      locations,
+      ${LOCATION_PROJECTION},
       startYear,
       endYear,
       isOngoing
@@ -130,9 +148,9 @@ export async function getAllImages(): Promise<ImageAsset[]> {
   }`
 
   return client.fetch(query, {}, { next: { revalidate: REVALIDATE } })
-}
+})
 
-export async function getSiteSettings(): Promise<SiteSettings> {
+export const getSiteSettings = cache(async function getSiteSettings(): Promise<SiteSettings> {
   const query = `*[_type == "siteSettings"][0] {
     _id,
     siteName,
@@ -149,16 +167,16 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       startYear,
       endYear,
       isOngoing,
-      locations,
+      ${LOCATION_PROJECTION},
       featuredImage,
       description
     }
   }`
 
   return client.fetch(query, {}, { next: { revalidate: REVALIDATE } })
-}
+})
 
-export async function getAllProducts(): Promise<Product[]> {
+export const getAllProducts = cache(async function getAllProducts(): Promise<Product[]> {
   const query = `*[_type == "product"] | order(_createdAt desc) {
     _id,
     title,
@@ -173,9 +191,9 @@ export async function getAllProducts(): Promise<Product[]> {
   }`
 
   return client.fetch(query, {}, { next: { revalidate: REVALIDATE } })
-}
+})
 
-export async function getProductBySlug(slug: string, locale: string = 'en'): Promise<Product | null> {
+export const getProductBySlug = cache(async function getProductBySlug(slug: string, locale: string = 'en'): Promise<Product | null> {
   const query = `*[_type == "product" && slug.${locale}.current == $slug][0] {
     _id,
     title,
@@ -194,4 +212,4 @@ export async function getProductBySlug(slug: string, locale: string = 'en'): Pro
   }`
 
   return client.fetch(query, { slug }, { next: { revalidate: REVALIDATE } })
-}
+})

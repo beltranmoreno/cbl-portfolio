@@ -1,4 +1,4 @@
-import type { Translations, LocalizedString, LocalizedSlug, LocalizedText, PortableTextBlock } from './types'
+import type { Translations, LocalizedString, LocalizedSlug, LocalizedText, PortableTextBlock, DatePrecision } from './types'
 import enCommon from '@/locales/en/common.json'
 import enNavigation from '@/locales/en/navigation.json'
 import esCommon from '@/locales/es/common.json'
@@ -73,6 +73,36 @@ export function getLocalizedField<T, K extends keyof T>(
     return typeof localized === 'string' ? localized : String(localized || '')
   }
   return typeof value === 'string' ? value : String(value || '')
+}
+
+/**
+ * Format an image date with variable precision (day/month/year).
+ * `date` is an ISO date string (YYYY-MM-DD). Returns '' if missing or invalid.
+ */
+export function formatImageDate(
+  date: string | undefined,
+  precision: DatePrecision | undefined,
+  locale: Locale = 'en'
+): string {
+  if (!date) return ''
+  const parsed = new Date(`${date}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return ''
+
+  const bcp47 = locale === 'es' ? 'es-ES' : 'en-US'
+
+  switch (precision) {
+    case 'year':
+      return parsed.getFullYear().toString()
+    case 'month':
+      return parsed.toLocaleDateString(bcp47, { year: 'numeric', month: 'long' })
+    case 'day':
+    default:
+      return parsed.toLocaleDateString(bcp47, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+  }
 }
 
 export function formatProjectYears(

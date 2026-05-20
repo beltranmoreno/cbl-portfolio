@@ -1,6 +1,31 @@
+import type { Metadata } from 'next'
 import { Locale, getTranslations, getLocalizedString } from '@/lib/i18n'
 import { getAllImages } from '@/lib/sanity.queries'
+import { buildMetadata } from '@/lib/seo'
 import ArchiveClient from './ArchiveClient'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const l = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
+  // Use the first featured image as the social preview if we have one.
+  const images = await getAllImages()
+  const ogImage = images[0]?.image
+  return buildMetadata({
+    title: l === 'es' ? 'Archivo' : 'Archive',
+    description:
+      l === 'es'
+        ? 'Explora el archivo completo de fotografías de Carmen Ballvé: proyectos documentales en blanco y negro de América Latina y más allá.'
+        : 'Browse the complete archive of Carmen Ballvé’s photography: black-and-white documentary projects from Latin America and beyond.',
+    pathEn: 'archive',
+    pathEs: 'archive',
+    locale: l,
+    image: ogImage,
+  })
+}
 
 export default async function ArchivePage({
   params,
@@ -12,7 +37,7 @@ export default async function ArchivePage({
   const translations = getTranslations(locale)
   const allImages = await getAllImages()
 
-  // Extract unique projects
+  // Extract unique projects (location IDs used for filter cross-referencing)
   const projects = Array.from(
     new Map(
       allImages
@@ -22,20 +47,20 @@ export default async function ArchivePage({
           {
             _id: img.project._id,
             title: getLocalizedString(img.project.title, locale),
-            locations: img.project.locations || [],
+            locationIds: (img.project.locations || []).map((loc) => loc._id),
           },
         ])
     ).values()
   ).sort((a, b) => a.title.localeCompare(b.title))
 
-  // Extract unique locations and years for filters
+  // Unique location filter options, deduped by Sanity _id, sorted by localized name
   const locations = Array.from(
-    new Set(
+    new Map(
       allImages
         .flatMap((img) => img.project?.locations || [])
-        .filter(Boolean)
-    )
-  ).sort()
+        .map((loc) => [loc._id, { _id: loc._id, name: getLocalizedString(loc.name, locale) }])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name))
 
   const years = Array.from(
     new Set(

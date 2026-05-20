@@ -2,23 +2,27 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Locale, getLocalizedField, getLocalizedSlug } from '@/lib/i18n'
+import { Locale, getLocalizedField, getLocalizedString, getLocalizedSlug } from '@/lib/i18n'
 import type { ImageAsset, CommonTranslations } from '@/lib/types'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
-import { useNavigation } from '@/contexts/NavigationContext'
 
 interface Project {
   _id: string
   title: string
-  locations: string[]
+  locationIds: string[]
+}
+
+interface LocationOption {
+  _id: string
+  name: string
 }
 
 interface ArchiveClientProps {
   locale: Locale
   images: ImageAsset[]
   projects: Project[]
-  locations: string[]
+  locations: LocationOption[]
   years: number[]
   tags: string[]
   translations: Pick<CommonTranslations, 'location' | 'year' | 'tags' | 'clearFilters' | 'showing' | 'noResults'>
@@ -33,20 +37,19 @@ export default function ArchiveClient({
   tags,
   translations,
 }: ArchiveClientProps) {
-  const { isNavVisible } = useNavigation()
   const [selectedProjects, setSelectedProjects] = useState<string[]>([])
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   const [selectedYears, setSelectedYears] = useState<number[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
-  // Get locations from selected projects
+  // Get location IDs from selected projects
   const projectLocations = useMemo(() => {
     if (selectedProjects.length === 0) return []
     return Array.from(
       new Set(
         projects
           .filter((p) => selectedProjects.includes(p._id))
-          .flatMap((p) => p.locations)
+          .flatMap((p) => p.locationIds)
       )
     )
   }, [selectedProjects, projects])
@@ -68,10 +71,10 @@ export default function ArchiveClient({
         }
       }
 
-      // Location filter (using effective locations)
+      // Location filter (using effective locations — matched on location _id)
       if (effectiveLocations.length > 0) {
         const hasMatchingLocation = img.project?.locations?.some((loc) =>
-          effectiveLocations.includes(loc)
+          effectiveLocations.includes(loc._id)
         )
         if (!hasMatchingLocation) return false
       }
@@ -142,12 +145,7 @@ export default function ArchiveClient({
   return (
     <>
       {/* Filter Bar */}
-      <div
-        className="sticky z-40 bg-white border-y border-neutral-200 py-4 mb-8 transition-all duration-300"
-        style={{
-          top: isNavVisible ? 'var(--nav-height)' : '0'
-        }}
-      >
+      <div className="bg-white border-y border-neutral-200 py-4 mb-8">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Project Filter */}
           <div className="flex-1">
@@ -178,14 +176,14 @@ export default function ArchiveClient({
             </label>
             <div className="flex flex-wrap gap-2">
               {locations.map((location) => {
-                const isFromProject = projectLocations.includes(location)
+                const isFromProject = projectLocations.includes(location._id)
                 const isDisabled = selectedProjects.length > 0 && !isFromProject
-                const isActive = effectiveLocations.includes(location)
+                const isActive = effectiveLocations.includes(location._id)
 
                 return (
                   <button
-                    key={location}
-                    onClick={() => toggleLocation(location)}
+                    key={location._id}
+                    onClick={() => toggleLocation(location._id)}
                     disabled={isDisabled}
                     className={`px-3 py-1 text-sm border transition-colors ${
                       isActive
@@ -195,7 +193,7 @@ export default function ArchiveClient({
                         : 'bg-white text-neutral-700 border-neutral-300 hover:border-primary'
                     }`}
                   >
-                    {location}
+                    {location.name}
                   </button>
                 )
               })}
@@ -247,53 +245,40 @@ export default function ArchiveClient({
               </div>
             </div>
           )}
-        
+        </div>
 
         {/* Active Filters & Clear Button */}
-        {hasActiveFilters && (
-          <div className="mt-4 flex items-center gap-4">
+        <div className="mt-4 flex items-center gap-4">
+          {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
               className="text-sm font-medium text-primary hover:text-primary-dark transition-colors"
             >
               {translations.clearFilters}
             </button>
-            <span className="text-sm text-neutral-600">
-              {translations.showing.replace(
-                '{count}',
-                filteredImages.length.toString()
-              )}
-            </span>
-          </div>
-        )}
-
-        {!hasActiveFilters && (
-          <div className="mt-4">
-            <span className="text-sm text-neutral-600">
-              {translations.showing.replace(
-                '{count}',
-                filteredImages.length.toString()
-              )}
-            </span>
-          </div>
-        )}
-      </div>
+          )}
+          <span className="text-sm text-neutral-600">
+            {translations.showing.replace(
+              '{count}',
+              filteredImages.length.toString()
+            )}
+          </span>
+        </div>
       </div>
 
       {/* Masonry Grid */}
       {filteredImages.length > 0 ? (
         <MasonryGrid>
           {filteredImages.map((imageAsset) => {
-            const projectTitle = getLocalizedField(
-              imageAsset.project,
-              'title',
-              locale
-            )
+            const projectTitle = imageAsset.project
+              ? getLocalizedString(imageAsset.project.title, locale)
+              : ''
             const projectSlug = getLocalizedSlug(
               imageAsset.project?.slug,
               locale
             )?.current || ''
-            const location = imageAsset.project?.locations?.[0] || ''
+            const firstLoc = imageAsset.project?.locations?.[0]
+            const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
 
             return (
               <Link
@@ -316,8 +301,8 @@ export default function ArchiveClient({
                     />
                   </div>
 
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 md:p-6">
+                  {/* Hover Overlay — gradient at the bottom only */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/85 via-black/55 to-transparent pt-16 pb-4 px-4 md:pt-24 md:pb-6 md:px-6">
                     <div className="text-white">
                       <h3 className="font-serif text-lg md:text-xl font-bold mb-1">
                         {projectTitle}

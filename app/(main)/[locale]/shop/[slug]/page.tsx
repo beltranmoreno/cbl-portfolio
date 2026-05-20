@@ -1,11 +1,47 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import { Locale, getTranslations, getLocalizedField, getLocalizedText } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedField, getLocalizedString, getLocalizedText } from '@/lib/i18n'
 import { getProductBySlug, getAllProducts, type PortableTextBlock } from '@/lib/sanity.queries'
+import { buildMetadata, extractPortableTextSummary } from '@/lib/seo'
 import { urlForImage } from '@/lib/sanity.client'
 import AddToCartButton from './AddToCartButton'
 
 export const dynamicParams = false
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>
+}): Promise<Metadata> {
+  const { locale, slug } = await params
+  const l = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
+  const product = await getProductBySlug(slug, l)
+  if (!product) {
+    return buildMetadata({
+      title: l === 'es' ? 'Producto no encontrado' : 'Product Not Found',
+      pathEn: `shop/${slug}`,
+      pathEs: `shop/${slug}`,
+      locale: l,
+      noIndex: true,
+    })
+  }
+  const title = getLocalizedString(product.title, l)
+  const description =
+    extractPortableTextSummary(getLocalizedText(product.description, l)) ||
+    undefined
+  const slugEn = product.slug?.en?.current || slug
+  const slugEs = product.slug?.es?.current || slug
+  return buildMetadata({
+    title,
+    description,
+    pathEn: `shop/${slugEn}`,
+    pathEs: `shop/${slugEs}`,
+    locale: l,
+    image: product.images?.[0],
+    ogType: 'website',
+  })
+}
 
 export async function generateStaticParams() {
   const products = await getAllProducts()
@@ -48,7 +84,7 @@ export default async function ProductPage({
           {/* Product Images */}
           <div className="space-y-4">
             {product.images.map((image, index) => (
-              <div key={index} className="relative aspect-square bg-neutral-100">
+              <div key={index} className="relative aspect-[3/4] bg-neutral-100">
                 <Image
                   src={urlForImage(image).width(800).url()}
                   alt={`${title} - Image ${index + 1}`}

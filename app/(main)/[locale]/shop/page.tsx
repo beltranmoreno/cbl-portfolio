@@ -1,8 +1,32 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Locale, getTranslations, getLocalizedField, getLocalizedSlug } from '@/lib/i18n'
 import { getAllProducts } from '@/lib/sanity.queries'
+import { buildMetadata } from '@/lib/seo'
 import { urlForImage } from '@/lib/sanity.client'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const l = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
+  const products = await getAllProducts()
+  const ogImage = products[0]?.images?.[0]
+  return buildMetadata({
+    title: l === 'es' ? 'Tienda' : 'Shop',
+    description:
+      l === 'es'
+        ? 'Compra impresiones limitadas, libros y publicaciones de Carmen Ballvé. Fotografía documental en blanco y negro.'
+        : 'Shop limited-edition prints, books, and publications from Carmen Ballvé. Black-and-white documentary photography.',
+    pathEn: 'shop',
+    pathEs: 'shop',
+    locale: l,
+    image: ogImage,
+  })
+}
 
 export default async function ShopPage({
   params,
@@ -33,7 +57,7 @@ export default async function ShopPage({
                 href={`/${locale}/shop/${slug}`}
                 className="group"
               >
-                <div className="relative aspect-square mb-4 overflow-hidden bg-neutral-100">
+                <div className="relative aspect-[3/4] mb-4 overflow-hidden bg-neutral-100">
                   <Image
                     src={urlForImage(product.images[0]).width(400).url()}
                     alt={title || 'Product'}

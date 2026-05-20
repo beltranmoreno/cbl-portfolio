@@ -3,12 +3,12 @@
 import { useMemo } from 'react'
 import Image from 'next/image'
 import { urlForImage } from '@/lib/sanity.client'
-import type { SanityImage } from '@/lib/sanity.queries'
+import type { SanityImage, ImageMedium } from '@/lib/sanity.queries'
 
 interface ImageWithBorderProps {
   image: SanityImage
   alt: string
-  medium: 'film-bw' | 'digital-bw'
+  medium: ImageMedium
   filmFormat?: '35mm' | '120' | 'none'
   priority?: boolean
   sizes?: string
@@ -45,25 +45,17 @@ export default function ImageWithBorder({
     return num
   }, [image.asset?._ref])
 
-  // Determine border class based on medium and format
+  // Determine border class based on medium and format. Color/B&W share the
+  // same borders since the border represents the capture medium (film vs digital).
   const getBorderClass = () => {
-    let baseClass = ''
+    const isFilm = medium === 'film-bw' || medium === 'film-color'
+    let baseClass = 'image-digital'
 
-    if (medium === 'digital-bw') {
-      baseClass = 'image-digital'
-    } else if (medium === 'film-bw') {
-      if (filmFormat === '35mm') {
-        baseClass = 'image-film-35mm'
-      } else if (filmFormat === '120') {
-        baseClass = 'image-film-120'
-      } else {
-        baseClass = 'image-digital'
-      }
-    } else {
-      baseClass = 'image-digital'
+    if (isFilm) {
+      if (filmFormat === '35mm') baseClass = 'image-film-35mm'
+      else if (filmFormat === '120') baseClass = 'image-film-120'
     }
 
-    // Add variation class
     return `${baseClass} ${baseClass}-v${variation}`
   }
 

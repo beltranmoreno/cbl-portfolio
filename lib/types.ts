@@ -17,6 +17,16 @@ export interface LocalizedSlug {
 }
 
 /**
+ * Location document - referenced from projects
+ */
+export interface Location {
+  _id: string
+  _type: 'location'
+  name: LocalizedString
+  slug: LocalizedSlug
+}
+
+/**
  * Portable Text block structure from Sanity
  */
 export interface PortableTextBlock {
@@ -77,7 +87,7 @@ export interface Project {
   startYear: number
   endYear?: number
   isOngoing: boolean
-  locations?: string[]
+  locations?: Location[]
   description: LocalizedText
   featuredImage: SanityImage
   primaryMedium: 'film-bw' | 'digital-bw' | 'mixed'
@@ -88,6 +98,16 @@ export interface Project {
 }
 
 /**
+ * Image medium — combination of capture method and color mode
+ */
+export type ImageMedium = 'film-bw' | 'film-color' | 'digital-bw' | 'digital-color'
+
+/**
+ * Precision of an image's date — controls how much detail to render
+ */
+export type DatePrecision = 'day' | 'month' | 'year'
+
+/**
  * Individual photograph/image asset
  */
 export interface ImageAsset {
@@ -95,14 +115,16 @@ export interface ImageAsset {
   _type: 'imageAsset'
   image: SanityImage
   caption: LocalizedString
-  medium: 'film-bw' | 'digital-bw'
+  medium: ImageMedium
   filmFormat?: '35mm' | '120' | 'none'
+  date?: string
+  datePrecision?: DatePrecision
   isFeatured: boolean
   project: {
     _id: string
     title: LocalizedString
     slug: LocalizedSlug
-    locations?: string[]
+    locations?: Location[]
     startYear: number
     endYear?: number
     isOngoing: boolean
@@ -153,7 +175,7 @@ export interface FeaturedProject {
   startYear: number
   endYear?: number
   isOngoing: boolean
-  locations?: string[]
+  locations?: Location[]
   featuredImage: SanityImage
   description: LocalizedText
 }

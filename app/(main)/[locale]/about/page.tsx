@@ -1,8 +1,30 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Locale, getTranslations, getLocalizedField, getLocalizedText, getLocalizedSlug, formatProjectYears, getLocalizedString } from '@/lib/i18n'
 import { getSiteSettings, getAllProjects, type PortableTextBlock } from '@/lib/sanity.queries'
+import { buildMetadata, extractPortableTextSummary } from '@/lib/seo'
 import { urlForImage } from '@/lib/sanity.client'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const l = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
+  const siteSettings = await getSiteSettings()
+  const bio = getLocalizedText(siteSettings?.aboutBio, l)
+  const description = extractPortableTextSummary(bio) || undefined
+  return buildMetadata({
+    title: l === 'es' ? 'Acerca de' : 'About',
+    description,
+    pathEn: 'about',
+    pathEs: 'about',
+    locale: l,
+    image: siteSettings?.aboutImage,
+  })
+}
 
 export default async function AboutPage({
   params,
@@ -82,18 +104,38 @@ export default async function AboutPage({
 
             {/* Social Links */}
             {siteSettings?.socialLinks && siteSettings.socialLinks.length > 0 && (
-              <div className="flex gap-4">
-                {siteSettings.socialLinks.map((link) => (
-                  <a
-                    key={link.url}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-neutral-600 hover:text-primary transition-colors"
-                  >
-                    {link.platform}
-                  </a>
-                ))}
+              <div className="flex gap-6">
+                {siteSettings.socialLinks.map((link) => {
+                  const isInstagram = link.platform.toLowerCase() === 'instagram'
+                  return (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-left gap-1 text-neutral-600 hover:text-primary transition-colors"
+                      aria-label={link.platform}
+                    >
+                      <span>{link.platform}</span>
+                      {isInstagram && (
+                        <svg
+                          className="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="5" />
+                          <circle cx="12" cy="12" r="4" />
+                          <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none" />
+                        </svg>
+                      )}
+                    </a>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -250,24 +292,26 @@ export default async function AboutPage({
                       href={`/${locale}/projects/${slug}`}
                       className="block group"
                     >
-                      <div className="relative overflow-hidden mb-4">
+                      <div className="relative aspect-[3/2] overflow-hidden mb-4">
                         <Image
                           src={urlForImage(project.featuredImage)
-                            .width(600)
+                            .width(900)
                             .url()}
                           alt={title || 'Project'}
-                          width={600}
-                          height={800}
-                          className="w-full h-auto transition-transform duration-300"
+                          fill
+                          className="object-cover transition-transform duration-300"
                           sizes="(max-width: 768px) 100vw, 400px"
                         />
                       </div>
                       <h3 className="font-serif text-xl md:text-2xl font-bold text-neutral-900 mb-2 group-hover:text-primary transition-colors">
                         {title}
                       </h3>
-                      {project.locations && (
+                      {project.locations && project.locations.length > 0 && (
                         <p className="text-neutral-600 text-sm">
-                          {project.locations.join(', ')}
+                          {project.locations
+                            .map((loc) => getLocalizedString(loc.name, locale))
+                            .filter(Boolean)
+                            .join(', ')}
                         </p>
                       )}
                       {/* Mobile year display */}

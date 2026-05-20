@@ -18,8 +18,11 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
   const [selectedImage, setSelectedImage] = useState<ImageAsset | null>(
     featuredImages[0] || null
   )
+  const [isSpotlightLoading, setIsSpotlightLoading] = useState(false)
 
-  const handleImageClick = (image: ImageAsset) => {
+  const selectImage = (image: ImageAsset) => {
+    if (selectedImage?._id === image._id) return
+    setIsSpotlightLoading(true)
     setSelectedImage(image)
   }
 
@@ -48,16 +51,16 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
           return
       }
 
-      setSelectedImage(featuredImages[newIndex])
+      selectImage(featuredImages[newIndex])
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedImage, featuredImages])
 
   const selectedCaption = selectedImage ? getLocalizedString(selectedImage.caption, locale) : ''
   const selectedProjectTitle = selectedImage ? getLocalizedString(selectedImage.project.title, locale) : ''
-  const selectedLocation = selectedImage?.project?.locations?.[0] || ''
   const selectedProjectSlug = selectedImage ? getLocalizedSlug(selectedImage.project.slug, locale)?.current || '' : ''
 
   return (
@@ -68,33 +71,38 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
         {selectedImage && (
           <div className="mb-8">
             <Link href={`/${locale}/projects/${selectedProjectSlug}`}>
-              <div className="image-digital">
-                <div className="relative overflow-hidden">
-                  <Image
-                    src={urlForImage(selectedImage.image).width(1200).url()}
-                    alt={selectedCaption || selectedProjectTitle || 'Photography'}
-                    width={1200}
-                    height={800}
-                    className="w-full h-auto object-cover"
-                    priority
-                    placeholder={selectedImage.image.metadata?.lqip ? 'blur' : 'empty'}
-                    blurDataURL={selectedImage.image.metadata?.lqip}
-                  />
+              <div className="frame-wood">
+                <div className="frame-mat">
+                  <div className="relative overflow-hidden">
+                    <Image
+                      src={urlForImage(selectedImage.image).width(1200).url()}
+                      alt={selectedCaption || selectedProjectTitle || 'Photography'}
+                      width={1200}
+                      height={800}
+                      className={`w-full h-auto object-cover transition-[filter] duration-500 ${
+                        isSpotlightLoading ? 'blur-lg' : 'blur-0'
+                      }`}
+                      priority
+                      placeholder={selectedImage.image.metadata?.lqip ? 'blur' : 'empty'}
+                      blurDataURL={selectedImage.image.metadata?.lqip}
+                      onLoad={() => setIsSpotlightLoading(false)}
+                    />
+                  </div>
                 </div>
               </div>
             </Link>
-            {/* Image Info */}
-            <div className="mt-4 space-y-2">
+            {/* Wall placard */}
+            <div className="mt-3 text-right">
               {selectedCaption && (
-                <p className="font-serif text-lg text-neutral-900">
+                <p className="font-serif italic text-base text-neutral-800 leading-tight">
                   {selectedCaption}
                 </p>
               )}
-              <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-neutral-600 text-sm">
-                {selectedProjectTitle && <span className="font-medium">{selectedProjectTitle}</span>}
-                {selectedLocation && selectedProjectTitle && <span>•</span>}
-                {selectedLocation && <span>{selectedLocation}</span>}
-              </div>
+              {selectedProjectTitle && (
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-neutral-500">
+                  {selectedProjectTitle}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -104,13 +112,14 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
           {featuredImages.map((imageAsset) => {
             const projectTitle = getLocalizedString(imageAsset.project.title, locale)
             const caption = getLocalizedString(imageAsset.caption, locale)
-            const location = imageAsset.project?.locations?.[0] || ''
+            const firstLoc = imageAsset.project?.locations?.[0]
+            const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
             const isSelected = selectedImage?._id === imageAsset._id
 
             return (
               <button
                 key={imageAsset._id}
-                onClick={() => handleImageClick(imageAsset)}
+                onClick={() => selectImage(imageAsset)}
                 className={`mb-4 md:mb-6 block w-full text-left transition-opacity ${
                   isSelected ? 'ring-2 ring-primary' : 'opacity-60 hover:opacity-100'
                 }`}
@@ -140,13 +149,14 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
             {featuredImages.map((imageAsset) => {
               const projectTitle = getLocalizedString(imageAsset.project.title, locale)
               const caption = getLocalizedString(imageAsset.caption, locale)
-              const location = imageAsset.project?.locations?.[0] || ''
+              const firstLoc = imageAsset.project?.locations?.[0]
+            const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
               const isSelected = selectedImage?._id === imageAsset._id
 
               return (
                 <button
                   key={imageAsset._id}
-                  onClick={() => handleImageClick(imageAsset)}
+                  onClick={() => selectImage(imageAsset)}
                   className={`mb-6 block w-full text-left transition-all ring-0 ${
                     isSelected ? 'scale-105' : 'opacity-90 hover:opacity-100 hover:scale-102'
                   }`}
@@ -173,33 +183,40 @@ export default function HomeContent({ featuredImages, locale }: HomeContentProps
           {selectedImage && (
             <Link href={`/${locale}/projects/${selectedProjectSlug}`} className="w-full h-full flex flex-col">
               <div className="flex-1 flex items-center justify-center">
-                <div className="image-digital max-w-full max-h-full">
-                  <div className="relative">
-                    <Image
-                      src={urlForImage(selectedImage.image).width(1600).url()}
-                      alt={selectedCaption || selectedProjectTitle || 'Photography'}
-                      width={1600}
-                      height={1200}
-                      className="w-full h-auto object-contain max-h-[70vh]"
-                      priority
-                      placeholder={selectedImage.image.metadata?.lqip ? 'blur' : 'empty'}
-                      blurDataURL={selectedImage.image.metadata?.lqip}
-                    />
+                <div className="flex flex-col">
+                  <div className="frame-wood max-w-full max-h-full">
+                    <div className="frame-mat">
+                      <div className="relative">
+                        <Image
+                          src={urlForImage(selectedImage.image).width(1600).url()}
+                          alt={selectedCaption || selectedProjectTitle || 'Photography'}
+                          width={1600}
+                          height={1200}
+                          className={`w-full h-auto object-contain max-h-[60vh] transition-[filter] duration-500 ${
+                            isSpotlightLoading ? 'blur-lg' : 'blur-0'
+                          }`}
+                          priority
+                          placeholder={selectedImage.image.metadata?.lqip ? 'blur' : 'empty'}
+                          blurDataURL={selectedImage.image.metadata?.lqip}
+                          onLoad={() => setIsSpotlightLoading(false)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Image Info */}
-              <div className="mt-2 space-y-3 text-center">
-                {selectedCaption && (
-                  <p className="font-serif text-2xl text-neutral-900">
-                    {selectedCaption}
-                  </p>
-                )}
-                <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-neutral-600 text-base">
-                  {selectedProjectTitle && <span className="font-medium">{selectedProjectTitle}</span>}
-                  {selectedLocation && selectedProjectTitle && <span>•</span>}
-                  {selectedLocation && <span>{selectedLocation}</span>}
+                  {/* Wall placard */}
+                  <div className="mt-3 text-right">
+                    {selectedCaption && (
+                      <p className="font-serif italic text-base text-neutral-800 leading-tight">
+                        {selectedCaption}
+                      </p>
+                    )}
+                    {selectedProjectTitle && (
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-neutral-500">
+                        {selectedProjectTitle}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </Link>

@@ -19,22 +19,31 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
+  const l = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
 
+  // Layout-level metadata sets the title TEMPLATE so each page's `title`
+  // becomes `Page — Carmen Ballvé`, and defines the locale-aware defaults.
   return {
-    title:
-      locale === 'es'
-        ? 'Carmen Ballvé - Fotografía de Retrato'
-        : 'Carmen Ballvé - Portrait Photography',
+    title: {
+      default: l === 'es'
+        ? 'Carmen Ballvé — Fotografía de Retrato y Documental'
+        : 'Carmen Ballvé — Portrait & Documentary Photography',
+      template: '%s — Carmen Ballvé',
+    },
     description:
-      locale === 'es'
-        ? 'Fotógrafa de retrato en blanco y negro especializada en proyectos documentales globales.'
-        : 'Black and white portrait photographer specializing in global documentary projects.',
+      l === 'es'
+        ? 'Carmen Ballvé es una fotógrafa documental y de retrato especializada en proyectos de película en blanco y negro en América Latina y más allá.'
+        : 'Carmen Ballvé is a documentary and portrait photographer specializing in black-and-white film projects across Latin America and beyond.',
     alternates: {
-      canonical: `https://carmenballve.com/${locale}`,
+      canonical: `/${l}`,
       languages: {
         en: '/en',
         es: '/es',
       },
+    },
+    openGraph: {
+      locale: l === 'es' ? 'es_ES' : 'en_US',
+      alternateLocale: l === 'es' ? ['en_US'] : ['es_ES'],
     },
   }
 }

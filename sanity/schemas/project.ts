@@ -1,19 +1,21 @@
-export default {
+import { defineField, defineType } from 'sanity'
+
+const project = defineType({
   name: 'project',
   title: 'Project',
   type: 'document',
   fields: [
-    {
+    defineField({
       name: 'title',
       title: 'Title',
       type: 'object',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule) => Rule.required(),
       fields: [
         { name: 'en', type: 'string', title: 'English' },
         { name: 'es', type: 'string', title: 'Spanish' }
       ]
-    },
-    {
+    }),
+    defineField({
       name: 'slug',
       title: 'Slug',
       type: 'object',
@@ -31,36 +33,36 @@ export default {
           options: { source: 'title.es', maxLength: 96 }
         }
       ]
-    },
-    {
+    }),
+    defineField({
       name: 'startYear',
       title: 'Start Year',
       type: 'number',
       description: 'Year the project started',
-      validation: (Rule: any) => Rule.required().min(1900).max(new Date().getFullYear())
-    },
-    {
+      validation: (Rule) => Rule.required().min(1900).max(new Date().getFullYear())
+    }),
+    defineField({
       name: 'endYear',
       title: 'End Year',
       type: 'number',
       description: 'Year the project ended (leave empty if ongoing)',
-      validation: (Rule: any) => Rule.optional().min(1900).max(new Date().getFullYear())
-    },
-    {
+      validation: (Rule) => Rule.min(1900).max(new Date().getFullYear())
+    }),
+    defineField({
       name: 'isOngoing',
       title: 'Ongoing Project',
       type: 'boolean',
       description: 'Check if project is still ongoing (will display "Present")',
       initialValue: false
-    },
-    {
+    }),
+    defineField({
       name: 'locations',
       title: 'Locations',
       type: 'array',
-      of: [{ type: 'string' }],
-      description: 'City, Country format recommended'
-    },
-    {
+      description: 'Where the project was made. References the Location document type.',
+      of: [{ type: 'reference', to: [{ type: 'location' }] }]
+    }),
+    defineField({
       name: 'description',
       title: 'Description',
       type: 'object',
@@ -78,8 +80,8 @@ export default {
           title: 'Spanish'
         }
       ]
-    },
-    {
+    }),
+    defineField({
       name: 'featuredImage',
       title: 'Featured Image',
       type: 'image',
@@ -87,9 +89,9 @@ export default {
         hotspot: true,
         metadata: ['blurhash', 'lqip', 'palette']
       },
-      validation: (Rule: any) => Rule.required()
-    },
-    {
+      validation: (Rule) => Rule.required()
+    }),
+    defineField({
       name: 'primaryMedium',
       title: 'Primary Medium',
       type: 'string',
@@ -101,14 +103,14 @@ export default {
         ]
       },
       initialValue: 'film-bw'
-    },
-    {
+    }),
+    defineField({
       name: 'collaborators',
       title: 'Collaborators',
       type: 'array',
       of: [{ type: 'string' }]
-    },
-    {
+    }),
+    defineField({
       name: 'publications',
       title: 'Publications',
       type: 'object',
@@ -116,18 +118,40 @@ export default {
         { name: 'en', type: 'array', of: [{ type: 'string' }], title: 'English' },
         { name: 'es', type: 'array', of: [{ type: 'string' }], title: 'Spanish' }
       ]
-    },
-    {
+    }),
+    defineField({
       name: 'isFeatured',
       title: 'Featured on Homepage',
       type: 'boolean',
       initialValue: false
-    },
-    {
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',
       description: 'Lower numbers appear first'
+    })
+  ],
+  orderings: [
+    {
+      title: 'Title (A–Z)',
+      name: 'titleAsc',
+      by: [{ field: 'title.en', direction: 'asc' }]
+    },
+    {
+      title: 'Title (Z–A)',
+      name: 'titleDesc',
+      by: [{ field: 'title.en', direction: 'desc' }]
+    },
+    {
+      title: 'Year (newest first)',
+      name: 'yearDesc',
+      by: [{ field: 'startYear', direction: 'desc' }]
+    },
+    {
+      title: 'Display order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }]
     }
   ],
   preview: {
@@ -138,7 +162,7 @@ export default {
       endYear: 'endYear',
       isOngoing: 'isOngoing'
     },
-    prepare({ title, media, startYear, endYear, isOngoing }: any) {
+    prepare({ title, media, startYear, endYear, isOngoing }) {
       let yearDisplay = startYear?.toString() || ''
       if (isOngoing) {
         yearDisplay += ' - Present'
@@ -153,4 +177,6 @@ export default {
       }
     }
   }
-}
+})
+
+export default project
