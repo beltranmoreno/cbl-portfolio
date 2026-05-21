@@ -20,10 +20,10 @@ export default function LanguageToggle({ currentLocale }: LanguageToggleProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 text-sm font-medium">
+    <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium">
       <button
         onClick={() => switchLocale('en')}
-        className={`px-2 py-1 transition-colors ${
+        className={`px-1.5 md:px-2 py-1 transition-colors ${
           currentLocale === 'en'
             ? 'text-primary font-bold'
             : 'text-neutral-500 hover:text-primary'
@@ -36,7 +36,7 @@ export default function LanguageToggle({ currentLocale }: LanguageToggleProps) {
       <span className="text-neutral-300">/</span>
       <button
         onClick={() => switchLocale('es')}
-        className={`px-2 py-1 transition-colors ${
+        className={`px-1.5 md:px-2 py-1 transition-colors ${
           currentLocale === 'es'
             ? 'text-primary font-bold'
             : 'text-neutral-500 hover:text-primary'

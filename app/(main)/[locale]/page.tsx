@@ -111,7 +111,7 @@ export default async function HomePage({
       <section className="container py-4 text-center mt-2">
         <Link
           href={`/${locale}/archive`}
-          className="inline-block px-8 py-4 bg-primary text-white font-sans font-medium text-lg hover:bg-primary-dark transition-colors"
+          className="inline-block px-6 py-3 bg-primary text-white font-sans font-medium text-sm hover:bg-primary-dark transition-colors"
         >
           {translations.common.viewFullArchive}
         </Link>

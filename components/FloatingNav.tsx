@@ -35,16 +35,17 @@ export default function FloatingNav({ locale, translations }: FloatingNavProps) 
     <>
       {/* FAB Button */}
       <motion.div
-        className="fixed top-6 left-6 z-50"
+        className="fixed top-4 left-4 md:top-6 md:left-6 z-50"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
       >
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center border border-neutral-200 hover:shadow-xl transition-shadow"
+          className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white shadow-lg flex items-center justify-center border border-neutral-200 hover:shadow-xl transition-shadow"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="Toggle menu"
         >
           <motion.div
             animate={{ rotate: isOpen ? 360 : 0 }}
@@ -52,10 +53,10 @@ export default function FloatingNav({ locale, translations }: FloatingNavProps) 
           >
             <Image
               src="/ARBOL_DE_LA_DICHA.png"
-              alt="Menu"
+              alt=""
               width={32}
               height={32}
-              className="w-8 h-8 object-contain"
+              className="w-6 h-6 md:w-8 md:h-8 object-contain"
             />
           </motion.div>
         </motion.button>
@@ -81,9 +82,9 @@ export default function FloatingNav({ locale, translations }: FloatingNavProps) 
               exit={{ scaleX: 0, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               style={{ originX: 0 }}
-              className="fixed top-6 left-6 h-16 bg-white shadow-lg rounded-full z-40 overflow-hidden"
+              className="fixed top-4 left-4 md:top-6 md:left-6 h-12 md:h-16 bg-white shadow-lg rounded-full z-40 overflow-hidden"
             >
-              <div className="flex items-center h-full px-4 gap-3 ml-16">
+              <div className="flex items-center h-full pl-12 md:pl-16 pr-2 md:pr-4 gap-0.5 md:gap-3">
                 {/* Navigation Links */}
                 {navLinks.map((link, index) => (
                   <motion.div
@@ -96,14 +97,14 @@ export default function FloatingNav({ locale, translations }: FloatingNavProps) 
                     <Link
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+                      className={`flex items-center px-2 md:px-4 py-1 md:py-2 rounded-full transition-all ${
                         isActive(link.href)
                           ? 'bg-primary text-white'
                           : 'text-neutral-700 hover:bg-neutral-100'
                       }`}
                       title={link.label}
                     >
-                      <span className="font-sans text-sm font-medium whitespace-nowrap">
+                      <span className="font-sans text-xs md:text-sm font-medium whitespace-nowrap">
                         {link.label}
                       </span>
                     </Link>
@@ -116,7 +117,7 @@ export default function FloatingNav({ locale, translations }: FloatingNavProps) 
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="w-px h-8 bg-neutral-200"
+                  className="w-px h-6 md:h-8 bg-neutral-200 mx-1 md:mx-0"
                 />
 
                 {/* Language Toggle */}
