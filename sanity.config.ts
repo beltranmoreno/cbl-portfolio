@@ -3,6 +3,7 @@ import { structureTool } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './sanity/schemas'
 import { structure } from './sanity/structure'
+import BulkUploadTool from './sanity/tools/BulkUploadTool'
 
 export default defineConfig({
   name: 'default',
@@ -18,4 +19,13 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+
+  tools: (prev) => [
+    ...prev,
+    {
+      name: 'bulk-upload',
+      title: 'Bulk Upload',
+      component: BulkUploadTool,
+    },
+  ],
 })
