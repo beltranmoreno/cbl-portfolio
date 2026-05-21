@@ -151,12 +151,15 @@ const imageAsset = defineType({
     select: {
       media: 'image',
       caption: 'caption.en',
-      project: 'project.title.en'
+      project: 'project.title.en',
+      isFeatured: 'isFeatured'
     },
-    prepare({ media, caption, project }) {
+    prepare({ media, caption, project, isFeatured }) {
+      const baseTitle = caption || 'Untitled'
+      const subtitleParts = [project, isFeatured ? '★ Featured' : null].filter(Boolean)
       return {
-        title: caption || 'Untitled',
-        subtitle: project,
+        title: isFeatured ? `★ ${baseTitle}` : baseTitle,
+        subtitle: subtitleParts.join(' · '),
         media: media
       }
     }
