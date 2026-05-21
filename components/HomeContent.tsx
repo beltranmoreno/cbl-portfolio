@@ -123,7 +123,7 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
               const projectTitle = getLocalizedString(imageAsset.project.title, locale)
               const caption = getLocalizedString(imageAsset.caption, locale)
               const firstLoc = imageAsset.project?.locations?.[0]
-            const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
+              const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
               const isSelected = selectedImage?._id === imageAsset._id
 
               return (
