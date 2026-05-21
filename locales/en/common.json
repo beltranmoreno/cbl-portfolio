@@ -24,5 +24,7 @@
   "emptyCart": "Your cart is empty",
   "price": "Price",
   "inStock": "In Stock",
-  "soldOut": "Sold Out"
+  "soldOut": "Sold Out",
+  "photographer": "Photographer",
+  "moreAboutCarmen": "More about Carmen"
 }

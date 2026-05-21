@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
-import { urlForImage } from '@/lib/sanity.client'
+import { urlForImage, getImageMeta } from '@/lib/sanity.client'
 import type { ImageAsset } from '@/lib/sanity.queries'
 import { Locale, getLocalizedField, formatImageDate } from '@/lib/i18n'
 
@@ -168,20 +168,28 @@ export default function Lightbox({
         className="relative w-full h-full flex items-center justify-center p-16"
         onClick={(e) => e.stopPropagation()}
       >
-        <Image
-          key={index}
-          src={urlForImage(currentImage.image).width(1920).url()}
-          alt={caption as string || 'Photography'}
-          width={1920}
-          height={1080}
-          className={`max-w-full max-h-full object-contain transition-[filter] duration-500 ${
-            isLoading ? 'blur-lg' : 'blur-0'
-          }`}
-          priority
-          placeholder={currentImage.image.metadata?.lqip ? 'blur' : 'empty'}
-          blurDataURL={currentImage.image.metadata?.lqip}
-          onLoad={() => setIsLoading(false)}
-        />
+        {(() => {
+          const meta = getImageMeta(currentImage.image)
+          const w = meta.dimensions?.width ?? 1920
+          const h = meta.dimensions?.height ?? 1080
+          return (
+            <Image
+              key={index}
+              src={urlForImage(currentImage.image).width(1920).url()}
+              alt={caption as string || 'Photography'}
+              width={w}
+              height={h}
+              sizes="100vw"
+              className={`max-w-full max-h-full object-contain transition-[filter] duration-500 ${
+                isLoading ? 'blur-lg' : 'blur-0'
+              }`}
+              priority
+              placeholder={meta.lqip ? 'blur' : 'empty'}
+              blurDataURL={meta.lqip}
+              onLoad={() => setIsLoading(false)}
+            />
+          )
+        })()}
       </div>
 
       {/* Mobile: single bottom bar with toggle + info + counter on one line */}

@@ -52,18 +52,40 @@ export interface LocalizedText {
 }
 
 /**
- * Sanity image asset reference
+ * Sanity image asset reference. When projected with the full metadata block
+ * (`asset->{ metadata { dimensions, lqip, ... } }`), `asset.metadata` holds
+ * the dimensions needed to reserve aspect-ratio space and avoid CLS.
  */
+export interface SanityImageDimensions {
+  width: number
+  height: number
+  aspectRatio: number
+}
+
 export interface SanityImage {
   _type: 'image'
   asset: {
-    _ref: string
-    _type: 'reference'
+    _ref?: string
+    _id?: string
+    _type?: 'reference' | 'sanity.imageAsset'
+    metadata?: {
+      dimensions?: SanityImageDimensions
+      lqip?: string
+      blurhash?: string
+      palette?: {
+        dominant?: {
+          background?: string
+          foreground?: string
+        }
+      }
+    }
   }
   hotspot?: {
     x: number
     y: number
   }
+  // Legacy: some queries still attach metadata at the image level (no asset
+  // dereference). Kept for backward compatibility with non-hot-path images.
   metadata?: {
     lqip?: string
     blurhash?: string
@@ -255,6 +277,8 @@ export interface CommonTranslations {
   price: string
   inStock: string
   soldOut: string
+  photographer: string
+  moreAboutCarmen: string
 }
 
 /**

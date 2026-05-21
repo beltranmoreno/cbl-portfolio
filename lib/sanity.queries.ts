@@ -40,6 +40,19 @@ export type {
 // Standard projection for location references
 const LOCATION_PROJECTION = `locations[]->{ _id, _type, name, slug }`
 
+// Inline image projection: expands `asset.metadata` (dimensions for
+// aspect-ratio reservation, lqip for blur placeholder, etc.) so consumers
+// don't have to dereference the asset separately. Keep this inline in the
+// queries we hot-path; static project images can stay as `featuredImage,`
+// since they already have aspect-[3/2] containers.
+const IMAGE_WITH_METADATA = `{
+  ...,
+  asset->{
+    _id,
+    metadata { dimensions, lqip, blurhash, palette }
+  }
+}`
+
 // Cache revalidation: no cache in development, 3600s in production
 const REVALIDATE = process.env.NODE_ENV === 'development' ? 0 : 3600
 
@@ -106,7 +119,7 @@ export const getProjectBySlug = cache(async function getProjectBySlug(slug: stri
 export const getFeaturedImages = cache(async function getFeaturedImages(): Promise<ImageAsset[]> {
   const query = `*[_type == "imageAsset" && isFeatured == true] {
     _id,
-    image,
+    image${IMAGE_WITH_METADATA},
     caption,
     medium,
     filmFormat,
@@ -129,7 +142,7 @@ export const getFeaturedImages = cache(async function getFeaturedImages(): Promi
 export const getAllImages = cache(async function getAllImages(): Promise<ImageAsset[]> {
   const query = `*[_type == "imageAsset"] | order(project->startYear desc, order asc) {
     _id,
-    image,
+    image${IMAGE_WITH_METADATA},
     caption,
     medium,
     filmFormat,

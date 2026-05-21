@@ -76,7 +76,10 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
     : imageUrl || `${SITE_URL}/og-default.jpg`
 
   const meta: Metadata = {
-    title,
+    // Only set `title` when explicitly provided. If we set `title: undefined`,
+    // Next.js treats it as overriding the parent layout's title template and
+    // emits no <title> at all.
+    ...(title !== undefined && { title }),
     description: resolvedDescription,
     alternates: {
       canonical,

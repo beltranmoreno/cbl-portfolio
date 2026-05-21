@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Locale, getLocalizedString, getLocalizedSlug } from '@/lib/i18n'
-import { urlForImage } from '@/lib/sanity.client'
+import { urlForImage, getImageMeta } from '@/lib/sanity.client'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
 import Lightbox from '@/components/Lightbox'
@@ -67,9 +67,9 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
   const selectedProjectSlug = selectedImage ? getLocalizedSlug(selectedImage.project.slug, locale)?.current || '' : ''
 
   return (
-    <section className="py-8 md:py-0">
+    <section className="relative py-8 md:py-0 ">
       {/* Mobile Layout — masonry only; tap an image to open the lightbox */}
-      <div className="lg:hidden container">
+      <div className="md:hidden container mb-16">
         <MasonryGrid>
           {featuredImages.map((imageAsset, index) => {
             const projectTitle = getLocalizedString(imageAsset.project.title, locale)
@@ -93,7 +93,8 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
                   alt={caption || projectTitle || 'Photography'}
                   medium={imageAsset.medium}
                   filmFormat={imageAsset.filmFormat}
-                  sizes="(max-width: 640px) 100vw, 50vw"
+                  sizes="50vw"
+                  maxWidth={600}
                   caption={caption}
                   location={location}
                   projectTitle={projectTitle}
@@ -105,8 +106,16 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
         </MasonryGrid>
       </div>
 
+      {/* Mobile-only bottom fade — dissolves the masonry into the white
+          about section below. On mobile the section is content-height, so
+          this sits at the end of the masonry. */}
+      <div
+        aria-hidden="true"
+        className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent via-white/70 to-white"
+      />
+
       {/* Desktop Layout - Split Screen */}
-      <div className="hidden lg:flex h-screen sticky top-0">
+      <div className="hidden md:flex h-screen sticky top-0">
         {/* Left: Masonry Grid - 50% */}
         <div className="w-1/2 overflow-y-auto scrollbar-hide px-6 py-8">
           <MasonryGrid>
@@ -130,7 +139,8 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
                     alt={caption || projectTitle || 'Photography'}
                     medium={imageAsset.medium}
                     filmFormat={imageAsset.filmFormat}
-                    sizes="40vw"
+                    sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 17vw, 25vw"
+                    maxWidth={600}
                     caption={caption}
                     location={location}
                     projectTitle={projectTitle}
@@ -144,7 +154,11 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
 
         {/* Right: Spotlight Image - 50% */}
         <div className="w-1/2 flex items-center justify-center bg-neutral-50 p-12 sticky top-0 h-100vh">
-          {selectedImage && (
+          {selectedImage && (() => {
+            const spotMeta = getImageMeta(selectedImage.image)
+            const spotW = spotMeta.dimensions?.width ?? 1600
+            const spotH = spotMeta.dimensions?.height ?? 1200
+            return (
             <Link href={`/${locale}/projects/${selectedProjectSlug}`} className="w-full h-full flex flex-col">
               <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col">
@@ -154,14 +168,15 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
                         <Image
                           src={urlForImage(selectedImage.image).width(1600).url()}
                           alt={selectedCaption || selectedProjectTitle || 'Photography'}
-                          width={1600}
-                          height={1200}
+                          width={spotW}
+                          height={spotH}
+                          sizes="(min-width: 1536px) 40vw, 45vw"
                           className={`w-full h-auto object-contain max-h-[60vh] transition-[filter] duration-500 ${
                             isSpotlightLoading ? 'blur-lg' : 'blur-0'
                           }`}
                           priority
-                          placeholder={selectedImage.image.metadata?.lqip ? 'blur' : 'empty'}
-                          blurDataURL={selectedImage.image.metadata?.lqip}
+                          placeholder={spotMeta.lqip ? 'blur' : 'empty'}
+                          blurDataURL={spotMeta.lqip}
                           onLoad={() => setIsSpotlightLoading(false)}
                         />
                       </div>
@@ -184,7 +199,8 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
                 </div>
               </div>
             </Link>
-          )}
+            )
+          })()}
         </div>
       </div>
 

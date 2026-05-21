@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import Image from 'next/image'
-import { urlForImage } from '@/lib/sanity.client'
+import { urlForImage, getImageMeta } from '@/lib/sanity.client'
 import type { SanityImage, ImageMedium } from '@/lib/sanity.queries'
 
 interface ImageWithBorderProps {
@@ -13,8 +13,8 @@ interface ImageWithBorderProps {
   priority?: boolean
   sizes?: string
   className?: string
-  width?: number
-  height?: number
+  /** Max width to request from Sanity. Lower = smaller payload. */
+  maxWidth?: number
   onLoad?: () => void
   caption?: string
   location?: string
@@ -30,20 +30,32 @@ export default function ImageWithBorder({
   priority = false,
   sizes = '100vw',
   className = '',
-  width = 800,
-  height = 1200,
+  maxWidth = 1200,
   onLoad,
   caption,
   location,
   projectTitle,
   thumbnail = false,
 }: ImageWithBorderProps) {
+  // Pull dimensions + lqip from the asset (new projection) or fall back to
+  // the inline image-level metadata.
+  const meta = getImageMeta(image)
+  const realWidth = meta.dimensions?.width
+  const realHeight = meta.dimensions?.height
+
+  // Use the asset's actual dimensions when we have them so Next.js reserves
+  // the correct aspect-ratio box and the page doesn't shift on load. Fall
+  // back to a 2:3 portrait sketch if dimensions aren't projected.
+  const imgWidth = realWidth ?? 800
+  const imgHeight = realHeight ?? 1200
+
   // Generate random variation based on image asset ID for consistency
   const variation = useMemo(() => {
-    const hash = image.asset?._ref?.split('-')[1] || ''
+    const ref = image.asset?._ref || image.asset?._id || ''
+    const hash = ref.split('-')[1] || ''
     const num = parseInt(hash.substring(0, 8), 16) % 5 + 1
-    return num
-  }, [image.asset?._ref])
+    return Number.isNaN(num) ? 1 : num
+  }, [image.asset?._ref, image.asset?._id])
 
   // Determine border class based on medium and format. Color/B&W share the
   // same borders since the border represents the capture medium (film vs digital).
@@ -60,8 +72,11 @@ export default function ImageWithBorder({
   }
 
   const borderClass = getBorderClass()
-  const imageUrl = urlForImage(image).width(width).url()
-  const blurDataURL = image.metadata?.lqip
+  // Source URL caps at maxWidth — Next.js will pick smaller srcset entries
+  // from there based on `sizes`. No reason to fetch beyond ~1200px for a
+  // masonry thumbnail; the source url is the upper bound.
+  const imageUrl = urlForImage(image).width(maxWidth).url()
+  const blurDataURL = meta.lqip
   const hasOverlay = caption || location || projectTitle
 
   return (
@@ -70,8 +85,8 @@ export default function ImageWithBorder({
         <Image
           src={imageUrl}
           alt={alt}
-          width={width}
-          height={height}
+          width={imgWidth}
+          height={imgHeight}
           sizes={sizes}
           priority={priority}
           placeholder={blurDataURL ? 'blur' : 'empty'}
