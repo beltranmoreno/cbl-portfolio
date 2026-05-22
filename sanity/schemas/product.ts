@@ -87,6 +87,12 @@ export default {
       initialValue: true
     },
     {
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+      description: 'Lower numbers appear first'
+    },
+    {
       name: 'variants',
       title: 'Variants',
       type: 'array',
@@ -108,16 +114,34 @@ export default {
       }]
     }
   ],
+  orderings: [
+    {
+      title: 'Display order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }]
+    },
+    {
+      title: 'Title (A–Z)',
+      name: 'titleAsc',
+      by: [{ field: 'title.en', direction: 'asc' }]
+    },
+    {
+      title: 'Newest first',
+      name: 'createdDesc',
+      by: [{ field: '_createdAt', direction: 'desc' }]
+    }
+  ],
   preview: {
     select: {
       title: 'title.en',
       media: 'images.0',
-      price: 'price'
+      price: 'price',
+      order: 'order'
     },
-    prepare({ title, media, price }: any) {
+    prepare({ title, media, price, order }: any) {
       return {
         title: title,
-        subtitle: `$${price}`,
+        subtitle: `${order != null ? `#${order} · ` : ''}$${price}`,
         media: media
       }
     }

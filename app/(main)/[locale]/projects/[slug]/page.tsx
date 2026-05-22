@@ -252,7 +252,7 @@ export default async function ProjectPage({
                   src={urlForImage(nextProject.featuredImage).width(800).url()}
                   alt={getLocalizedString(nextProject.title, locale)}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="(max-width: 768px) 100vw, 800px"
                 />
               </div>

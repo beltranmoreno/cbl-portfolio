@@ -190,7 +190,7 @@ export const getSiteSettings = cache(async function getSiteSettings(): Promise<S
 })
 
 export const getAllProducts = cache(async function getAllProducts(): Promise<Product[]> {
-  const query = `*[_type == "product"] | order(_createdAt desc) {
+  const query = `*[_type == "product"] | order(coalesce(order, 9999) asc, _createdAt desc) {
     _id,
     title,
     slug,
@@ -200,7 +200,8 @@ export const getAllProducts = cache(async function getAllProducts(): Promise<Pro
     stripeProductId,
     relatedProject,
     inStock,
-    variants
+    variants,
+    order
   }`
 
   return client.fetch(query, {}, { next: { revalidate: REVALIDATE } })

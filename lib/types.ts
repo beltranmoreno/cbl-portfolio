@@ -185,6 +185,7 @@ export interface Product {
   }
   inStock: boolean
   variants?: ProductVariant[]
+  order?: number
 }
 
 /**

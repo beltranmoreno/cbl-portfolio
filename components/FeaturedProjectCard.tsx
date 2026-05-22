@@ -26,7 +26,7 @@ export default function FeaturedProjectCard({ project, locale }: FeaturedProject
           src={urlForImage(project.featuredImage).width(1200).url()}
           alt={title || 'Project'}
           fill
-          className="object-cover transition-transform duration-300"
+          className="object-contain transition-transform duration-300"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
       </div>

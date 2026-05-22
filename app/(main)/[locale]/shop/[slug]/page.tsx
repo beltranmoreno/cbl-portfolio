@@ -89,7 +89,7 @@ export default async function ProductPage({
                   src={urlForImage(image).width(800).url()}
                   alt={`${title} - Image ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority={index === 0}
                 />

@@ -45,8 +45,8 @@ export default async function ShopPage({
           {locale === 'en' ? 'Shop' : 'Tienda'}
         </h1>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        {/* Product List */}
+        <div className="flex flex-col gap-10 max-w-4xl mx-auto">
           {products.map((product) => {
             const title = getLocalizedField(product, 'title', locale)
             const slug = getLocalizedSlug(product.slug, locale)?.current || ''
@@ -55,42 +55,44 @@ export default async function ShopPage({
               <Link
                 key={product._id}
                 href={`/${locale}/shop/${slug}`}
-                className="group"
+                className="group flex flex-col sm:flex-row gap-6 sm:gap-8 items-start"
               >
-                <div className="relative aspect-[3/4] mb-4 overflow-hidden bg-neutral-100">
+                <div className="relative w-40 sm:w-56 aspect-[3/4] overflow-hidden bg-neutral-100 shrink-0">
                   <Image
                     src={urlForImage(product.images[0]).width(400).url()}
                     alt={title || 'Product'}
                     fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-contain"
+                    sizes="(max-width: 640px) 160px, 224px"
                   />
                   {!product.inStock && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="bg-white text-neutral-900 px-4 py-2 font-bold text-sm">
+                      <span className="bg-white text-neutral-900 px-3 py-1.5 font-bold text-xs">
                         {translations.common.soldOut}
                       </span>
                     </div>
                   )}
                 </div>
 
-                <h2 className="font-sans text-lg font-medium text-neutral-900 mb-2 group-hover:text-primary transition-colors">
-                  {title}
-                </h2>
+                <div className="flex-1 sm:py-2">
+                  <h2 className="font-sans text-xl font-medium text-neutral-900 mb-2 group-hover:text-primary transition-colors">
+                    {title}
+                  </h2>
 
-                <p className="text-neutral-700 font-medium">
-                  ${product.price.toFixed(2)}
-                </p>
+                  <p className="text-neutral-700 font-medium text-lg">
+                    ${product.price.toFixed(2)}
+                  </p>
 
-                {product.inStock ? (
-                  <span className="inline-block mt-2 text-sm text-neutral-600">
-                    {translations.common.viewDetails}
-                  </span>
-                ) : (
-                  <span className="inline-block mt-2 text-sm text-neutral-400">
-                    {translations.common.outOfStock}
-                  </span>
-                )}
+                  {product.inStock ? (
+                    <span className="inline-block mt-4 text-sm text-neutral-600 border-b border-neutral-400 group-hover:border-primary group-hover:text-primary transition-colors">
+                      {translations.common.viewDetails}
+                    </span>
+                  ) : (
+                    <span className="inline-block mt-4 text-sm text-neutral-400">
+                      {translations.common.outOfStock}
+                    </span>
+                  )}
+                </div>
               </Link>
             )
           })}
