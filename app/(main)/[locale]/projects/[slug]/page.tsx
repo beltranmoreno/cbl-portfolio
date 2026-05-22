@@ -124,7 +124,7 @@ export default async function ProjectPage({
               <span>{formatProjectYears(project.startYear, project.endYear, project.isOngoing, locale)}</span>
               {project.locations && project.locations.length > 0 && (
                 <>
-                  <span aria-hidden="true">·</span>
+                  <span aria-hidden="true">•</span>
                   <span>
                     {project.locations
                       .map((loc) => getLocalizedString(loc.name, locale))

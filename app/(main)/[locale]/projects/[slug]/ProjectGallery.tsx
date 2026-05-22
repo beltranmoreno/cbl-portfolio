@@ -52,7 +52,7 @@ export default function ProjectGallery({
                 {/* Caption overlay on hover - bottom left with gradient */}
                 {caption && (
                   <div className="absolute bottom-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-16 pb-4 px-4">
-                    <p className="text-white font-sans text-sm">
+                    <p className="text-white font-sans text-sm translate-y-2 group-hover:translate-y-0 transition-transform duration-300 ease-out">
                       {caption}
                     </p>
                   </div>

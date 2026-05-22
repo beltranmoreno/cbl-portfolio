@@ -97,18 +97,20 @@ export default function ImageWithBorder({
         />
         {hasOverlay && !thumbnail && (
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-24 pb-4 px-4 md:px-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            {caption && (
-              <p className="text-white font-serif text-base md:text-lg leading-relaxed mb-2">
-                {caption}
-              </p>
-            )}
-            {(location || projectTitle) && (
-              <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-white/80 text-xs md:text-sm">
-                {projectTitle && <span>{projectTitle}</span>}
-                {location && projectTitle && <span>•</span>}
-                {location && <span>{location}</span>}
-              </div>
-            )}
+            <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 ease-out">
+              {caption && (
+                <p className="text-white font-serif text-base md:text-lg leading-relaxed mb-2">
+                  {caption}
+                </p>
+              )}
+              {(location || projectTitle) && (
+                <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-white/80 text-xs md:text-sm">
+                  {projectTitle && <span>{projectTitle}</span>}
+                  {location && projectTitle && <span>•</span>}
+                  {location && <span>{location}</span>}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Locale, getLocalizedField, getLocalizedString } from '@/lib/i18n'
+import Link from 'next/link'
+import { Locale, getLocalizedField, getLocalizedString, getLocalizedSlug } from '@/lib/i18n'
 import type { ImageAsset, CommonTranslations } from '@/lib/types'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
@@ -274,16 +275,42 @@ export default function ArchiveClient({
             const projectTitle = imageAsset.project
               ? getLocalizedString(imageAsset.project.title, locale)
               : ''
+            const projectSlug = imageAsset.project
+              ? getLocalizedSlug(imageAsset.project.slug, locale)?.current || ''
+              : ''
+            const projectHref = projectSlug
+              ? `/${locale}/projects/${projectSlug}`
+              : null
             const firstLoc = imageAsset.project?.locations?.[0]
             const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
             const captionText = getLocalizedField(imageAsset, 'caption', locale)
+            // Year of the image (from its own date), if available.
+            const imageYear = imageAsset.date?.slice(0, 4) || ''
+            // Title is the caption; if missing fall back to project title.
+            const heading = captionText || projectTitle
+            // Subtitle parts under the heading: project (only if heading is
+            // the caption, otherwise project is already the heading) • location • year.
+            // Each entry carries an optional href so the project part is rendered
+            // as a Link.
+            const subtitleParts: { text: string; href?: string | null }[] = [
+              captionText ? { text: projectTitle, href: projectHref } : { text: '' },
+              { text: location },
+              { text: imageYear },
+            ].filter((p) => Boolean(p.text))
 
             return (
-              <button
+              <div
                 key={imageAsset._id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => setLightboxIndex(index)}
-                className="mb-4 md:mb-6 block w-full text-left group cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setLightboxIndex(index)
+                  }
+                }}
+                className="mb-4 md:mb-6 block w-full text-left group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label={
                   captionText
                     ? `${captionText} — ${projectTitle}`
@@ -301,19 +328,39 @@ export default function ArchiveClient({
                     />
                   </div>
 
-                  {/* Hover Overlay — gradient at the bottom only */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/85 via-black/55 to-transparent pt-16 pb-4 px-4 md:pt-24 md:pb-6 md:px-6">
-                    <div className="text-white">
+                  {/* Hover Overlay — gradient at the bottom only. No
+                      pointer-events-none here so the project Link inside can
+                      be clicked; clicks elsewhere bubble up and open the
+                      lightbox. */}
+                  <div className="absolute inset-x-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/85 via-black/55 to-transparent pt-16 pb-4 px-4 md:pt-24 md:pb-6 md:px-6">
+                    <div className="text-white translate-y-2 group-hover:translate-y-0 transition-transform duration-300 ease-out">
                       <h3 className="font-serif text-lg md:text-xl font-bold mb-1">
-                        {projectTitle}
+                        {heading}
                       </h3>
-                      {location && (
-                        <p className="text-sm text-white/90">{location}</p>
+                      {subtitleParts.length > 0 && (
+                        <p className="text-sm text-white/90 flex flex-wrap items-center gap-x-2">
+                          {subtitleParts.map((part, i) => (
+                            <span key={i} className="flex items-center gap-x-2">
+                              {i > 0 && <span aria-hidden="true">•</span>}
+                              {part.href ? (
+                                <Link
+                                  href={part.href}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="underline underline-offset-2 decoration-white/40 hover:decoration-white"
+                                >
+                                  {part.text}
+                                </Link>
+                              ) : (
+                                <span>{part.text}</span>
+                              )}
+                            </span>
+                          ))}
+                        </p>
                       )}
                     </div>
                   </div>
                 </div>
-              </button>
+              </div>
             )
           })}
         </MasonryGrid>

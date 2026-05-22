@@ -215,15 +215,35 @@ export default function Lightbox({
         >
           {toggleLabel}
         </button>
-        {showInfo && (
-          <div className="flex-1 min-w-0 flex flex-col items-center gap-y-2">
-            <div className="flex flex-wrap items-baseline justify-center gap-x-2 md:gap-x-3">
-              {caption && (
-                <span className="font-serif text-sm md:text-base truncate max-w-full">{caption}</span>
-              )}
-              {dateLabel && <span className="text-neutral-300">{dateLabel}</span>}
-              <span className="text-neutral-300">{mediumLabel}</span>
-              {projectTitle && projectHref && (
+        {showInfo && (() => {
+          // Each part renders as a span (or Link for project). Bullets are
+          // inserted between consecutive parts so they always separate caption
+          // • date • medium • project, regardless of which ones are present.
+          const parts: { key: string; node: React.ReactNode }[] = []
+          if (caption) {
+            parts.push({
+              key: 'caption',
+              node: (
+                <span className="font-serif text-sm md:text-base truncate max-w-full">
+                  {caption}
+                </span>
+              ),
+            })
+          }
+          if (dateLabel) {
+            parts.push({
+              key: 'date',
+              node: <span className="text-neutral-300">{dateLabel}</span>,
+            })
+          }
+          parts.push({
+            key: 'medium',
+            node: <span className="text-neutral-300">{mediumLabel}</span>,
+          })
+          if (projectTitle && projectHref) {
+            parts.push({
+              key: 'project',
+              node: (
                 <Link
                   href={projectHref}
                   onClick={onClose}
@@ -232,19 +252,31 @@ export default function Lightbox({
                   {projectTitle}
                   <span aria-hidden="true" className="hidden md:inline">→</span>
                 </Link>
+              ),
+            })
+          }
+          return (
+            <div className="flex-1 min-w-0 flex flex-col items-center gap-y-2">
+              <div className="flex flex-wrap items-baseline justify-center gap-x-2 md:gap-x-3">
+                {parts.map((p, i) => (
+                  <span key={p.key} className="flex items-baseline gap-x-2 md:gap-x-3">
+                    {i > 0 && <span aria-hidden="true" className="text-neutral-400">•</span>}
+                    {p.node}
+                  </span>
+                ))}
+              </div>
+              {currentImage.availableAsPrint && (
+                <Link
+                  href={projectHref || '#'}
+                  onClick={onClose}
+                  className="hidden md:inline-block px-4 py-2 bg-primary text-white text-sm hover:bg-primary-dark transition-colors"
+                >
+                  {availableAsPrintText}
+                </Link>
               )}
             </div>
-            {currentImage.availableAsPrint && (
-              <Link
-                href={projectHref || '#'}
-                onClick={onClose}
-                className="hidden md:inline-block px-4 py-2 bg-primary text-white text-sm hover:bg-primary-dark transition-colors"
-              >
-                {availableAsPrintText}
-              </Link>
-            )}
-          </div>
-        )}
+          )
+        })()}
         <span className="flex-none">{counterLabel}</span>
       </div>
     </div>
