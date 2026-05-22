@@ -33,6 +33,20 @@ export default {
       ]
     },
     {
+      name: 'productType',
+      title: 'Product Type',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Book / Libro', value: 'book' },
+          { title: 'Photobook / Fotolibro', value: 'fotolibro' },
+          { title: 'Print / Impresión', value: 'print' }
+        ]
+      },
+      initialValue: 'print',
+      validation: (Rule: any) => Rule.required()
+    },
+    {
       name: 'images',
       title: 'Product Images',
       type: 'array',
@@ -136,12 +150,23 @@ export default {
       title: 'title.en',
       media: 'images.0',
       price: 'price',
-      order: 'order'
+      order: 'order',
+      productType: 'productType'
     },
-    prepare({ title, media, price, order }: any) {
+    prepare({ title, media, price, order, productType }: any) {
+      const typeLabel =
+        productType === 'book' ? 'Book'
+        : productType === 'fotolibro' ? 'Photobook'
+        : productType === 'print' ? 'Print'
+        : ''
+      const parts = [
+        order != null ? `#${order}` : null,
+        typeLabel || null,
+        `$${price}`
+      ].filter(Boolean)
       return {
         title: title,
-        subtitle: `${order != null ? `#${order} · ` : ''}$${price}`,
+        subtitle: parts.join(' · '),
         media: media
       }
     }

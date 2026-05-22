@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Locale, getTranslations, getLocalizedString, getLocalizedText, getLocalizedSlug, formatProjectYears } from '@/lib/i18n'
-import { getProjectBySlug, getAllProjects, type PortableTextBlock, type Project, type ImageAsset } from '@/lib/sanity.queries'
+import { Locale, getTranslations, getLocalizedString, getLocalizedText, getLocalizedSlug, formatProjectYears, getProductTypeLabel } from '@/lib/i18n'
+import { getProjectBySlug, getAllProjects, type PortableTextBlock, type Project, type ImageAsset, type Product } from '@/lib/sanity.queries'
 import { buildMetadata, extractPortableTextSummary } from '@/lib/seo'
 import { urlForImage } from '@/lib/sanity.client'
 import ProjectGallery from './ProjectGallery'
@@ -42,9 +42,10 @@ export async function generateMetadata({
   })
 }
 
-// Extended Project type with images
+// Extended Project type with images and reverse-referenced products
 type ProjectWithImages = Project & {
   images?: ImageAsset[]
+  products?: Product[]
 }
 
 export const dynamicParams = false
@@ -222,6 +223,69 @@ export default async function ProjectPage({
             locale={locale}
             availableAsPrintText={translations.common.availableAsPrint}
           />
+        </section>
+      )}
+
+      {/* Related Products */}
+      {project.products && project.products.length > 0 && (
+        <section className="container py-12 md:py-16 border-t border-neutral-200">
+          <h2 className="font-serif text-2xl md:text-3xl font-bold text-neutral-900 mb-8 text-center">
+            {locale === 'en' ? 'Shop this project' : 'Compra este proyecto'}
+          </h2>
+          <div className="flex flex-col gap-10 max-w-4xl mx-auto">
+            {project.products.map((product) => {
+              const productTitle = getLocalizedString(product.title, locale)
+              const productSlug = getLocalizedSlug(product.slug, locale)?.current || ''
+
+              return (
+                <Link
+                  key={product._id}
+                  href={`/${locale}/shop/${productSlug}`}
+                  className="group flex flex-col sm:flex-row gap-6 sm:gap-8 items-start"
+                >
+                  <div className="relative w-40 sm:w-56 aspect-[3/4] overflow-hidden bg-neutral-100 shrink-0">
+                    <Image
+                      src={urlForImage(product.images[0]).width(400).url()}
+                      alt={productTitle || 'Product'}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 640px) 160px, 224px"
+                    />
+                    {!product.inStock && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="bg-white text-neutral-900 px-3 py-1.5 font-bold text-xs">
+                          {translations.common.soldOut}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 sm:py-2">
+                    {product.productType && (
+                      <p className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-2">
+                        {getProductTypeLabel(product.productType, locale)}
+                      </p>
+                    )}
+                    <h3 className="font-sans text-xl font-medium text-neutral-900 mb-2 group-hover:text-primary transition-colors">
+                      {productTitle}
+                    </h3>
+                    <p className="text-neutral-700 font-medium text-lg">
+                      ${product.price.toFixed(2)}
+                    </p>
+                    {product.inStock ? (
+                      <span className="inline-block mt-4 text-sm text-neutral-600 border-b border-neutral-400 group-hover:border-primary group-hover:text-primary transition-colors">
+                        {translations.common.viewDetails}
+                      </span>
+                    ) : (
+                      <span className="inline-block mt-4 text-sm text-neutral-400">
+                        {translations.common.outOfStock}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         </section>
       )}
 

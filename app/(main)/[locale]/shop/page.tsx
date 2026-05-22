@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Locale, getTranslations, getLocalizedField, getLocalizedSlug } from '@/lib/i18n'
+import { Locale, getTranslations, getLocalizedField, getLocalizedSlug, getProductTypeLabel } from '@/lib/i18n'
 import { getAllProducts } from '@/lib/sanity.queries'
 import { buildMetadata } from '@/lib/seo'
 import { urlForImage } from '@/lib/sanity.client'
@@ -75,6 +75,12 @@ export default async function ShopPage({
                 </div>
 
                 <div className="flex-1 sm:py-2">
+                  {product.productType && (
+                    <p className="text-xs font-bold uppercase tracking-wide text-neutral-500 mb-2">
+                      {getProductTypeLabel(product.productType, locale)}
+                    </p>
+                  )}
+
                   <h2 className="font-sans text-xl font-medium text-neutral-900 mb-2 group-hover:text-primary transition-colors">
                     {title}
                   </h2>

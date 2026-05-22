@@ -105,6 +105,19 @@ export function formatImageDate(
   }
 }
 
+export function getProductTypeLabel(
+  productType: string | undefined,
+  locale: Locale = 'en'
+): string {
+  if (!productType) return ''
+  const labels: Record<string, { en: string; es: string }> = {
+    book: { en: 'Book', es: 'Libro' },
+    fotolibro: { en: 'Photobook', es: 'Fotolibro' },
+    print: { en: 'Print', es: 'Impresión' },
+  }
+  return labels[productType]?.[locale] ?? ''
+}
+
 export function formatProjectYears(
   startYear: number,
   endYear?: number,

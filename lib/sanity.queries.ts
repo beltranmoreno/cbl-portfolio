@@ -12,6 +12,7 @@ import type {
   DatePrecision,
   Location,
   Product,
+  ProductType,
   ProductVariant,
   SiteSettings,
   FeaturedProject,
@@ -31,6 +32,7 @@ export type {
   DatePrecision,
   Location,
   Product,
+  ProductType,
   ProductVariant,
   SiteSettings,
   FeaturedProject,
@@ -108,6 +110,16 @@ export const getProjectBySlug = cache(async function getProjectBySlug(slug: stri
       datePrecision,
       tags,
       availableAsPrint,
+      order
+    },
+    "products": *[_type == "product" && references(^._id)] | order(coalesce(order, 9999) asc, _createdAt desc) {
+      _id,
+      title,
+      slug,
+      productType,
+      images,
+      price,
+      inStock,
       order
     },
     order
@@ -194,6 +206,7 @@ export const getAllProducts = cache(async function getAllProducts(): Promise<Pro
     _id,
     title,
     slug,
+    productType,
     images,
     description,
     price,
@@ -212,6 +225,7 @@ export const getProductBySlug = cache(async function getProductBySlug(slug: stri
     _id,
     title,
     slug,
+    productType,
     images,
     description,
     price,

@@ -169,11 +169,14 @@ export interface ProductVariant {
 /**
  * Shop product (prints, books, etc.)
  */
+export type ProductType = 'book' | 'fotolibro' | 'print'
+
 export interface Product {
   _id: string
   _type: 'product'
   title: LocalizedString
   slug: LocalizedSlug
+  productType?: ProductType
   images: SanityImage[]
   description: LocalizedText
   price: number
