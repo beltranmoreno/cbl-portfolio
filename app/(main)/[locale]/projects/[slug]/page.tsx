@@ -101,7 +101,7 @@ export default async function ProjectPage({
   return (
     <div className="min-h-screen">
       {/* Hero: image + title/meta/description side by side */}
-      <section className="container pt-8 md:pt-12 pb-10 md:pb-16">
+      <section className="container pt-8 md:pt-24 pb-10 md:pb-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start">
           {/* Cover image */}
           <div className="md:col-span-7 relative aspect-[3/2] overflow-hidden">

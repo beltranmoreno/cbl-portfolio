@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+// import { useMemo } from 'react'
 import Image from 'next/image'
 import { urlForImage, getImageMeta } from '@/lib/sanity.client'
 import type { SanityImage, ImageMedium } from '@/lib/sanity.queries'
@@ -50,28 +50,29 @@ export default function ImageWithBorder({
   const imgHeight = realHeight ?? 1200
 
   // Generate random variation based on image asset ID for consistency
-  const variation = useMemo(() => {
-    const ref = image.asset?._ref || image.asset?._id || ''
-    const hash = ref.split('-')[1] || ''
-    const num = parseInt(hash.substring(0, 8), 16) % 5 + 1
-    return Number.isNaN(num) ? 1 : num
-  }, [image.asset?._ref, image.asset?._id])
+  // const variation = useMemo(() => {
+  //   const ref = image.asset?._ref || image.asset?._id || ''
+  //   const hash = ref.split('-')[1] || ''
+  //   const num = parseInt(hash.substring(0, 8), 16) % 5 + 1
+  //   return Number.isNaN(num) ? 1 : num
+  // }, [image.asset?._ref, image.asset?._id])
 
   // Determine border class based on medium and format. Color/B&W share the
   // same borders since the border represents the capture medium (film vs digital).
-  const getBorderClass = () => {
-    const isFilm = medium === 'film-bw' || medium === 'film-color'
-    let baseClass = 'image-digital'
+  
+  // const getBorderClass = () => {
+  //   const isFilm = medium === 'film-bw' || medium === 'film-color'
+  //   let baseClass = 'image-digital'
 
-    if (isFilm) {
-      if (filmFormat === '35mm') baseClass = 'image-film-35mm'
-      else if (filmFormat === '120') baseClass = 'image-film-120'
-    }
+  //   if (isFilm) {
+  //     if (filmFormat === '35mm') baseClass = 'image-film-35mm'
+  //     else if (filmFormat === '120') baseClass = 'image-film-120'
+  //   }
 
-    return `${baseClass} ${baseClass}-v${variation}`
-  }
+  //   return `${baseClass} ${baseClass}-v${variation}`
+  // }
 
-  const borderClass = getBorderClass()
+  // const borderClass = getBorderClass()
   // Source URL caps at maxWidth — Next.js will pick smaller srcset entries
   // from there based on `sizes`. No reason to fetch beyond ~1200px for a
   // masonry thumbnail; the source url is the upper bound.
@@ -80,7 +81,7 @@ export default function ImageWithBorder({
   const hasOverlay = caption || location || projectTitle
 
   return (
-    <div className={`${borderClass} ${className} group`}>
+    <div className={`${className} group`}>
       <div className="relative overflow-hidden">
         <Image
           src={imageUrl}

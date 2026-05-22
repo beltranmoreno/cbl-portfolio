@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { urlForImage, getImageMeta } from '@/lib/sanity.client'
 import type { ImageAsset } from '@/lib/sanity.queries'
-import { Locale, getLocalizedField, formatImageDate } from '@/lib/i18n'
+import { Locale, getLocalizedField, getLocalizedString, getLocalizedSlug, formatImageDate } from '@/lib/i18n'
 
 interface LightboxProps {
   images: ImageAsset[]
@@ -93,6 +94,15 @@ export default function Lightbox({
     ? locale === 'es' ? 'Ocultar info' : 'Hide Info'
     : locale === 'es' ? 'Mostrar info' : 'Show Info'
 
+  // Project link (only present when the image was queried with project info)
+  const projectTitle = currentImage.project
+    ? getLocalizedString(currentImage.project.title, locale)
+    : ''
+  const projectSlug = currentImage.project
+    ? getLocalizedSlug(currentImage.project.slug, locale)?.current || ''
+    : ''
+  const projectHref = projectSlug ? `/${locale}/projects/${projectSlug}` : null
+
   return (
     <div
       className="fixed inset-0 z-[100] bg-black flex items-center justify-center touch-pan-y"
@@ -125,11 +135,11 @@ export default function Lightbox({
           e.stopPropagation()
           goToPrevious()
         }}
-        className="absolute left-0 md:left-1 top-1/2 -translate-y-1/2 text-white hover:text-neutral-300 transition-colors p-2 md:p-4 z-10"
+        className="absolute -left-1 md:left-1 top-1/2 -translate-y-1/2 text-white hover:text-neutral-300 transition-colors p-1 md:p-4 z-10"
         aria-label="Previous image"
       >
         <svg
-          className="w-12 h-12"
+          className="w-7 h-7 md:w-12 md:h-12"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -147,11 +157,11 @@ export default function Lightbox({
           e.stopPropagation()
           goToNext()
         }}
-        className="absolute right-0 md:right-1 top-1/2 -translate-y-1/2 text-white hover:text-neutral-300 transition-colors p-2 md:p-4 z-10"
+        className="absolute -right-1 md:right-1 top-1/2 -translate-y-1/2 text-white hover:text-neutral-300 transition-colors p-1 md:p-4 z-10"
         aria-label="Next image"
       >
         <svg
-          className="w-12 h-12"
+          className="w-7 h-7 md:w-12 md:h-12"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -192,9 +202,11 @@ export default function Lightbox({
         })()}
       </div>
 
-      {/* Mobile: single bottom bar with toggle + info + counter on one line */}
+      {/* Unified bottom bar (mobile + desktop): toggle on the left, info
+          centered, counter on the right. Print CTA, if applicable, sits
+          centered below the info line on desktop only. */}
       <div
-        className="md:hidden absolute bottom-2 inset-x-2 z-10 flex items-center justify-between gap-2 text-white text-xs"
+        className="absolute bottom-2 md:bottom-4 inset-x-2 md:inset-x-6 z-10 flex items-center justify-between gap-2 text-white text-xs md:text-sm"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -204,50 +216,36 @@ export default function Lightbox({
           {toggleLabel}
         </button>
         {showInfo && (
-          <div className="flex-1 min-w-0 flex flex-wrap items-baseline justify-center gap-x-2">
-            {caption && (
-              <span className="font-serif text-sm truncate max-w-full">{caption}</span>
+          <div className="flex-1 min-w-0 flex flex-col items-center gap-y-2">
+            <div className="flex flex-wrap items-baseline justify-center gap-x-2 md:gap-x-3">
+              {caption && (
+                <span className="font-serif text-sm md:text-base truncate max-w-full">{caption}</span>
+              )}
+              {dateLabel && <span className="text-neutral-300">{dateLabel}</span>}
+              <span className="text-neutral-300">{mediumLabel}</span>
+              {projectTitle && projectHref && (
+                <Link
+                  href={projectHref}
+                  onClick={onClose}
+                  className="text-white underline underline-offset-2 md:underline-offset-4 decoration-white/40 hover:decoration-white inline-flex items-center gap-1"
+                >
+                  {projectTitle}
+                  <span aria-hidden="true" className="hidden md:inline">→</span>
+                </Link>
+              )}
+            </div>
+            {currentImage.availableAsPrint && (
+              <Link
+                href={projectHref || '#'}
+                onClick={onClose}
+                className="hidden md:inline-block px-4 py-2 bg-primary text-white text-sm hover:bg-primary-dark transition-colors"
+              >
+                {availableAsPrintText}
+              </Link>
             )}
-            {dateLabel && <span className="text-neutral-300">{dateLabel}</span>}
-            <span className="text-neutral-300">{mediumLabel}</span>
           </div>
         )}
         <span className="flex-none">{counterLabel}</span>
-      </div>
-
-      {/* Desktop: toggle button (bottom-left) */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          setShowInfo(!showInfo)
-        }}
-        className="hidden md:block absolute bottom-4 left-4 text-white hover:text-neutral-300 transition-colors text-sm z-10"
-      >
-        {toggleLabel}
-      </button>
-
-      {/* Desktop: stacked info panel above the toggle */}
-      {showInfo && (
-        <div
-          className="hidden md:block absolute bottom-16 left-4 max-w-md text-white text-left"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex flex-col items-start gap-y-1">
-            {caption && <p className="font-serif text-lg">{caption}</p>}
-            {dateLabel && <p className="text-sm text-neutral-300">{dateLabel}</p>}
-            <p className="text-sm text-neutral-300">{mediumLabel}</p>
-          </div>
-          {currentImage.availableAsPrint && (
-            <button className="mt-4 px-4 py-2 bg-primary text-white text-sm hover:bg-primary-dark transition-colors">
-              {availableAsPrintText}
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Desktop: image counter (bottom-right) */}
-      <div className="hidden md:block absolute bottom-4 right-4 text-white text-sm z-10">
-        {counterLabel}
       </div>
     </div>
   )

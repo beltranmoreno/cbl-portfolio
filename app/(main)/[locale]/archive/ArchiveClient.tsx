@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Link from 'next/link'
-import { Locale, getLocalizedField, getLocalizedString, getLocalizedSlug } from '@/lib/i18n'
+import { Locale, getLocalizedField, getLocalizedString } from '@/lib/i18n'
 import type { ImageAsset, CommonTranslations } from '@/lib/types'
 import MasonryGrid from '@/components/MasonryGrid'
 import ImageWithBorder from '@/components/ImageWithBorder'
+import Lightbox from '@/components/Lightbox'
 
 interface Project {
   _id: string
@@ -25,7 +25,7 @@ interface ArchiveClientProps {
   locations: LocationOption[]
   years: number[]
   tags: string[]
-  translations: Pick<CommonTranslations, 'location' | 'year' | 'tags' | 'clearFilters' | 'showing' | 'noResults'>
+  translations: Pick<CommonTranslations, 'location' | 'year' | 'tags' | 'clearFilters' | 'showing' | 'noResults' | 'availableAsPrint'>
 }
 
 export default function ArchiveClient({
@@ -41,6 +41,7 @@ export default function ArchiveClient({
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   const [selectedYears, setSelectedYears] = useState<number[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   // Get location IDs from selected projects
   const projectLocations = useMemo(() => {
@@ -269,32 +270,31 @@ export default function ArchiveClient({
       {/* Masonry Grid */}
       {filteredImages.length > 0 ? (
         <MasonryGrid>
-          {filteredImages.map((imageAsset) => {
+          {filteredImages.map((imageAsset, index) => {
             const projectTitle = imageAsset.project
               ? getLocalizedString(imageAsset.project.title, locale)
               : ''
-            const projectSlug = getLocalizedSlug(
-              imageAsset.project?.slug,
-              locale
-            )?.current || ''
             const firstLoc = imageAsset.project?.locations?.[0]
             const location = firstLoc ? getLocalizedString(firstLoc.name, locale) : ''
+            const captionText = getLocalizedField(imageAsset, 'caption', locale)
 
             return (
-              <Link
+              <button
                 key={imageAsset._id}
-                href={`/${locale}/projects/${projectSlug}`}
-                className="mb-4 md:mb-6 block group"
+                type="button"
+                onClick={() => setLightboxIndex(index)}
+                className="mb-4 md:mb-6 block w-full text-left group cursor-pointer"
+                aria-label={
+                  captionText
+                    ? `${captionText} — ${projectTitle}`
+                    : projectTitle || 'Photograph'
+                }
               >
                 <div className="relative overflow-hidden">
                   <div className="image-hover">
                     <ImageWithBorder
                       image={imageAsset.image}
-                      alt={
-                        getLocalizedField(imageAsset, 'caption', locale) ||
-                        projectTitle ||
-                        'Photography'
-                      }
+                      alt={captionText || projectTitle || 'Photography'}
                       medium={imageAsset.medium}
                       filmFormat={imageAsset.filmFormat}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -313,7 +313,7 @@ export default function ArchiveClient({
                     </div>
                   </div>
                 </div>
-              </Link>
+              </button>
             )
           })}
         </MasonryGrid>
@@ -321,6 +321,17 @@ export default function ArchiveClient({
         <div className="text-center py-20">
           <p className="text-neutral-600 text-lg">{translations.noResults}</p>
         </div>
+      )}
+
+      {/* Lightbox — opens when an image is clicked */}
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={filteredImages}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          locale={locale}
+          availableAsPrintText={translations.availableAsPrint}
+        />
       )}
     </>
   )
