@@ -62,7 +62,7 @@ export default async function ShopPage({
                     src={urlForImage(product.images[0]).width(400).url()}
                     alt={title || 'Product'}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                   {!product.inStock && (

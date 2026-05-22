@@ -130,8 +130,8 @@ export default function HomeContent({ featuredImages, locale, availableAsPrintTe
                 <button
                   key={imageAsset._id}
                   onClick={() => selectImage(imageAsset)}
-                  className={`mb-6 block w-full text-left transition-all ring-0 ${
-                    isSelected ? 'scale-105' : 'opacity-90 hover:opacity-100 hover:scale-102'
+                  className={`mb-6 block w-full text-left transition-opacity ${
+                    isSelected ? 'opacity-100' : 'opacity-95 hover:opacity-100 hover:cursor-pointer'
                   }`}
                 >
                   <ImageWithBorder

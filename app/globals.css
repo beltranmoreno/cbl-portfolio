@@ -413,13 +413,13 @@ body {
   }
 }
 
-/* Image hover effects */
+/* `image-hover` is kept as a marker class (used by parent components to
+   identify the image wrapper), but no transform/scale is applied: doing so
+   inside CSS-columns masonry creates a new stacking context that triggers
+   Safari to "snap" the column clip mid-hover, producing the side-cropping
+   effect. Visual hover feedback lives on the overlay (opacity/translate). */
 .image-hover {
-  transition: transform 200ms ease-out;
-}
-
-.image-hover:hover {
-  transform: scale(1);
+  /* intentionally empty */
 }
 
 /* Navigation transitions */

@@ -110,7 +110,7 @@ export default async function ProjectPage({
               alt={title || 'Project'}
               fill
               priority
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 768px) 100vw, 58vw"
             />
           </div>
@@ -252,7 +252,7 @@ export default async function ProjectPage({
                   src={urlForImage(nextProject.featuredImage).width(800).url()}
                   alt={getLocalizedString(nextProject.title, locale)}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover"
                   sizes="(max-width: 768px) 100vw, 800px"
                 />
               </div>

@@ -317,7 +317,7 @@ export default function ArchiveClient({
                     : projectTitle || 'Photograph'
                 }
               >
-                <div className="relative overflow-hidden">
+                <div className="relative">
                   <div className="image-hover">
                     <ImageWithBorder
                       image={imageAsset.image}

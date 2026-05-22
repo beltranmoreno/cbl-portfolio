@@ -38,7 +38,7 @@ export default function ProjectGallery({
               onClick={() => openLightbox(index)}
               className="mb-4 md:mb-6 block w-full text-left group cursor-pointer"
             >
-              <div className="relative overflow-hidden">
+              <div className="relative">
                 <div className="image-hover">
                   <ImageWithBorder
                     image={imageAsset.image}
